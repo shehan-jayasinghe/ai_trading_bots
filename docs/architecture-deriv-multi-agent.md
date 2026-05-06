@@ -13,6 +13,7 @@ A **multi-agent** system over a **Deriv** trading workflow that:
 - Pulls **market data**, runs **strategies** and **indicators** (exposed as **tools** to agents).
 - Uses **one model path** for **semantic RAG** (embeddings + retrieval) and **another** for **direction / decision** (e.g. SageMaker or Amazon Bedrock).
 - Runs on a **schedule** (e.g. **every 2 hours**), executes up to **N trades per run** (e.g. **5**), and respects **money-management cycles** (e.g. **10 trades** per block, then **sleep** / pause until the next policy window).
+- Uses **job-based execution**: scheduler enqueues runs, and worker processes execute trades in background (non-blocking API).
 - Persists **every closed trade** (win/loss, stake, profit, context) into **vector + structured** storage so agents can query **5- or 10-trade windows** (semantic + exact).
 - Exposes a **FastAPI** service: trade lists, run status, and **trade cards** (pre/post window, PnL, indicator snapshot, TA tags, RAG context).
 
@@ -66,7 +67,8 @@ flowchart LR
     L[Lambda runner]
   end
   subgraph compute
-    API[FastAPI on ECS Fargate or Lambda behind API Gateway]
+    API[FastAPI Read Control API]
+    WKR[Fargate Worker Jobs]
     SMdec[SageMaker endpoint Decision model]
     SMemb[SageMaker endpoint Embedding model]
   end
@@ -77,17 +79,19 @@ flowchart LR
   end
   EB --> L
   L --> API
-  API --> SMdec
-  API --> SMemb
-  API --> S3
+  API --> WKR
+  WKR --> SMdec
+  WKR --> SMemb
+  WKR --> S3
+  WKR --> DDB
   SMemb --> VDB
-  API --> DDB
   L --> DDB
 ```
 
 **Notes**
 
 - **EventBridge → Lambda**: ideal to **trigger** a run. If orchestration exceeds Lambda **timeout**, use **SQS + Fargate worker**, or **Step Functions**, or run the **orchestrator** on **Fargate** and let Lambda only enqueue.
+- **Run API should be asynchronous**: `POST /runs` returns immediately with `run_id` and `queued` state; worker performs trade loop and writes progress.
 - **“S3 vector bucket”**: raw artifacts can live in **S3**; **similarity search** still needs a **vector index** (OpenSearch Serverless, pgvector, etc.), not S3 alone.
 - **SageMaker**: “encoding” = **embedding** endpoint; “direction” = separate **inference** endpoint (or use **Bedrock** for one or both to reduce ops).
 
@@ -130,7 +134,7 @@ flowchart LR
 
 | Area | Examples |
 |------|----------|
-| **Runs** | `POST /runs` (manual trigger), `GET /runs/{id}` (status, trades done, next wake). |
+| **Runs** | `POST /runs` (enqueue + `202 Accepted`), `GET /runs/{id}` (status, trades done, next wake). |
 | **Trades** | `GET /trades` (paginated W/L, stake, profit). |
 | **Trade card** | `GET /trades/{id}/card`: **pre-trade window** (OHLC + indicators), **post-trade window**, **PnL**, **TA tags**, **RAG snippets** used at decision time, **MM state** snapshot. |
 
@@ -144,7 +148,9 @@ Optional: **WebSocket/SSE** for live quotes in the UI; the **scheduled bot** can
 sequenceDiagram
   participant EB as EventBridge
   participant L as Lambda
-  participant O as Orchestrator
+  participant O as API Orchestrator
+  participant Q as Queue
+  participant W as Worker
   participant D as Data agent
   participant I as Indicator strategy tools
   participant R as RAG retrieve
@@ -155,7 +161,10 @@ sequenceDiagram
   participant DB as Trade store
 
   EB->>L: scheduled tick
-  L->>O: start run max_trades=5
+  L->>O: enqueue run request
+  O->>Q: push run job
+  O-->>L: 202 accepted with run_id
+  Q->>W: deliver run job
   loop each trade until 5 or stop
     D->>D: build windows
     I->>I: signals from tools
@@ -163,15 +172,15 @@ sequenceDiagram
     M->>M: stake from MM rules
     C->>C: CALL PUT or skip
     alt skip
-      O->>O: log skip
+      W->>DB: log skip
     else trade
       Der->>Der: place order
-      Der-->>O: outcome W L
-      O->>DB: persist trade
-      O->>V: embed and upsert summary
+      Der-->>W: outcome W L
+      W->>DB: persist trade
+      W->>V: embed and upsert summary
     end
   end
-  O->>O: cycle sleep if block complete
+  W->>DB: mark run completed or sleeping
 ```
 
 ---

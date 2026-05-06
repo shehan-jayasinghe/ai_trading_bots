@@ -53,7 +53,7 @@ Public surface for **operators** and **UI**. Internal Lambda/orchestrator can ca
 |--------|------|-------------|
 | `GET` | `/health` | OK + dependency checks (DB, optional vector) |
 | `GET` | `/ready` | Stricter: DB + broker ping if allowed |
-| `POST` | `/runs` | Body: optional overrides (`trades_per_run`, `symbol`). Returns `run_id` |
+| `POST` | `/runs` | Body: optional overrides (`trades_per_run`, `symbol`). Returns `202` + `run_id` + `status=queued` |
 | `GET` | `/runs` | Query: pagination, status filter |
 | `GET` | `/runs/{run_id}` | Status, trades executed, errors, next wake time |
 | `GET` | `/trades` | Query: `from`, `to`, `symbol`, `result`, pagination |
@@ -63,6 +63,13 @@ Public surface for **operators** and **UI**. Internal Lambda/orchestrator can ca
 **Auth:** API key, JWT, or IAM (API Gateway + SigV4) depending on deployment; not optional for prod.
 
 **Errors:** Use stable `error_code` + HTTP status; never return secrets.
+
+### 2.3 Async execution contract
+
+- API must not block until a full run (for example 5 trades) completes.
+- `POST /runs` creates run row + enqueues job + returns immediately.
+- Worker updates `runs.status` (`queued` -> `running` -> `completed`/`failed`/`sleeping`).
+- UI and operators poll `GET /runs/{run_id}` and `GET /trades`.
 
 ---
 
@@ -150,7 +157,9 @@ flowchart TB
   end
   subgraph compute
     L[Lambda trigger]
-    API[FastAPI service ECS Fargate or Lambda]
+    API[FastAPI Read Control API]
+    Q[SQS queue]
+    W[Worker ECS Fargate tasks]
   end
   subgraph ml
     EMB[SageMaker or Bedrock Embeddings]
@@ -164,12 +173,15 @@ flowchart TB
   end
   EB --> L
   L --> API
+  API --> Q
+  Q --> W
   APIGW --> API
-  API --> EMB
-  API --> DEC
+  W --> EMB
+  W --> DEC
   API --> DB
-  API --> VDB
-  API --> S3
+  W --> DB
+  W --> VDB
+  W --> S3
   API --> SM
 ```
 
@@ -178,9 +190,10 @@ flowchart TB
 | Component | Responsibility |
 |-----------|----------------|
 | **EventBridge** | Fire **every 2h** (or cron); pass **constant JSON** or rely on env in Lambda |
-| **Lambda** | **Thin**: validate secret, **invoke** orchestrator (HTTP to internal API, or direct import if same container image with layers) |
-| **FastAPI** | REST for UI/operators; shared library for **orchestrator** if co-deployed |
-| **ECS Fargate** | Long-running API + optional worker if Lambda timeout is too low |
+| **Lambda** | **Thin**: trigger only; call `POST /runs` |
+| **FastAPI** | Read/control API; enqueue run jobs and expose status/trade endpoints |
+| **SQS** | Durable run queue between API trigger and workers |
+| **ECS Fargate Worker** | Executes trade loop jobs, writes progress and outcomes |
 | **SageMaker endpoints** | **Embedding** + **Decision** (or Bedrock for either) |
 | **RDS Postgres + pgvector** | **Single** place for **trades + vectors** if you want fewer databases |
 | **DynamoDB** | Alternative to RDS for **high-volume idempotent** writes (runs/trades); pair with OpenSearch for vectors |
@@ -210,7 +223,7 @@ flowchart TB
 
 | Starting point | What you use |
 |----------------|----------------|
-| **Minimal** | Postgres + **pgvector** + FastAPI on one Fargate service; EventBridge → Lambda → **POST /runs**; no OpenSearch until scale demands it |
+| **Minimal** | Postgres + **pgvector** + FastAPI + SQS + one Fargate worker; EventBridge -> Lambda -> **POST /runs** |
 | **Separate vectors later** | Keep trades in Postgres; move embeddings to OpenSearch when semantic load grows |
 | **No S3 at first** | Store indicator snapshots in JSON on `trades`; add S3 when windows get huge |
 
