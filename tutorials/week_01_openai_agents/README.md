@@ -13,7 +13,7 @@ pip install -r requirements.txt
 python -m playwright install chromium
 ```
 
-Headless search uses **Playwright** (DuckDuckGo HTML first; if a bot challenge appears, it falls back to **Wikipedia** search results). Respect site terms and rate limits; this is for learning only.
+Headless search uses **Playwright** with DuckDuckGo HTML results. Respect site terms and rate limits; this is for learning only.
 
 Configure your API key (same as OpenAI Python defaults):
 
@@ -29,7 +29,15 @@ See `.env.example` for the variable name; you can copy values into a `.env` and 
 python main.py
 ```
 
+## Code layout
+
+- `main.py` keeps the original simple entrypoint.
+- `week_01_openai_agents/config.py` stores settings such as model name and search limits.
+- `week_01_openai_agents/search.py` contains DuckDuckGo browser search.
+- `week_01_openai_agents/agents/` contains the planner and researcher agents.
+- `week_01_openai_agents/workflow.py` orchestrates the full planner → parallel research → email flow.
+
 ## Requirements
 
 - Python 3.11+
-- A model ID your account supports (the script uses `gpt-4.1`; change it in `main.py` if needed).
+- A model ID your account supports (the script uses `gpt-4.1`; change it in `week_01_openai_agents/config.py` if needed).
