@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/backend" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/backend/bot_circuit/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/tutorials/week_01_openai_agents/.venv" />
     </content>
     <orderEntry type="jdk" jdkName="uv (deriv_ai_bot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
