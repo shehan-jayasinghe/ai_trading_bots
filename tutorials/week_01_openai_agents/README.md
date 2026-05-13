@@ -29,9 +29,16 @@ See `.env.example` for the variable name; you can copy values into a `.env` and 
 python main.py
 ```
 
+For a beginner-friendly single-file version:
+
+```bash
+python main_simple.py
+```
+
 ## Code layout
 
 - `main.py` keeps the original simple entrypoint.
+- `main_simple.py` keeps the full tutorial in one readable file.
 - `week_01_openai_agents/config.py` stores settings such as model name and search limits.
 - `week_01_openai_agents/search.py` contains DuckDuckGo browser search.
 - `week_01_openai_agents/agents/` contains the planner and researcher agents.
