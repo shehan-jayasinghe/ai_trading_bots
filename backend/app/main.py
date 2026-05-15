@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.deps import get_current_user
+from app.middleware.auth import get_current_user
 from app.routes.public.hello import router as public_hello_router
 from app.routes.protected.hello import router as protected_hello_router
 
