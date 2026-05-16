@@ -5,6 +5,7 @@ cryptography
 python-dotenv
 pydantic
 sqlalchemy
+greenlet
 asyncpg
 psycopg2-binary
 python-multipart

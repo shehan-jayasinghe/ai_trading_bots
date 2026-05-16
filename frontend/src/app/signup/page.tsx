@@ -1,11 +1,13 @@
 "use client";
 
 import type { ApiErrorResponse, ApiSuccessResponse } from "@/types";
+import { authInputClass, authLabelClass } from "@/lib/auth-form-styles";
 import {
   signupFormSchema,
   zodIssuesToFieldErrors,
 } from "@/lib/validation";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -60,7 +62,17 @@ export default function SignupPage() {
         return;
       }
 
-      router.push("/login");
+      const signInRes = await signIn("credentials", {
+        email: parsed.data.email,
+        password: parsed.data.password,
+        redirect: false,
+      });
+      if (signInRes?.error) {
+        router.push("/login");
+        router.refresh();
+        return;
+      }
+      router.push("/");
       router.refresh();
     } finally {
       setLoading(false);
@@ -68,34 +80,30 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-full flex-1 bg-slate-950 text-slate-50">
+    <div className="min-h-full flex-1 bg-white text-slate-900">
       <div className="relative flex min-h-full flex-col justify-center px-4 py-14">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-slate-950"
-          aria-hidden
-        />
         <div className="relative mx-auto w-full max-w-md">
           <div className="mb-10 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-400/90">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Deriv AI
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
               Create account
             </h1>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-slate-600">
               Email and a strong password
             </p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-white/10 bg-slate-900/60 p-8 shadow-2xl backdrop-blur-md"
+            className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
             noValidate
           >
             {formError && (
               <p
                 role="alert"
-                className="mb-6 rounded-lg border border-red-500/30 bg-red-950/50 px-4 py-3 text-sm text-red-200"
+                className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               >
                 {formError}
               </p>
@@ -105,7 +113,7 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="signup-email"
-                  className="text-sm font-medium text-slate-200"
+                  className={authLabelClass}
                 >
                   Email
                 </label>
@@ -122,22 +130,18 @@ export default function SignupPage() {
                       return n;
                     });
                   }}
-                  className={`w-full rounded-xl border bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:ring-2 ${
-                    fieldErrors.email
-                      ? "border-red-500/60"
-                      : "border-white/10 focus:ring-indigo-500/20"
-                  }`}
+                  className={authInputClass(!!fieldErrors.email)}
                   placeholder="you@example.com"
                 />
                 {fieldErrors.email && (
-                  <p className="text-sm text-red-400">{fieldErrors.email}</p>
+                  <p className="text-sm text-red-600">{fieldErrors.email}</p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <label
                   htmlFor="signup-password"
-                  className="text-sm font-medium text-slate-200"
+                  className={authLabelClass}
                 >
                   Password
                 </label>
@@ -154,22 +158,18 @@ export default function SignupPage() {
                       return n;
                     });
                   }}
-                  className={`w-full rounded-xl border bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:ring-2 ${
-                    fieldErrors.password
-                      ? "border-red-500/60"
-                      : "border-white/10 focus:ring-indigo-500/20"
-                  }`}
+                  className={authInputClass(!!fieldErrors.password)}
                   placeholder="At least 8 characters"
                 />
                 {fieldErrors.password && (
-                  <p className="text-sm text-red-400">{fieldErrors.password}</p>
+                  <p className="text-sm text-red-600">{fieldErrors.password}</p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <label
                   htmlFor="signup-confirm"
-                  className="text-sm font-medium text-slate-200"
+                  className={authLabelClass}
                 >
                   Confirm password
                 </label>
@@ -186,15 +186,11 @@ export default function SignupPage() {
                       return n;
                     });
                   }}
-                  className={`w-full rounded-xl border bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:ring-2 ${
-                    fieldErrors.confirmPassword
-                      ? "border-red-500/60"
-                      : "border-white/10 focus:ring-indigo-500/20"
-                  }`}
+                  className={authInputClass(!!fieldErrors.confirmPassword)}
                   placeholder="Repeat password"
                 />
                 {fieldErrors.confirmPassword && (
-                  <p className="text-sm text-red-400">
+                  <p className="text-sm text-red-600">
                     {fieldErrors.confirmPassword}
                   </p>
                 )}
@@ -203,17 +199,17 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full justify-center rounded-xl bg-indigo-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-indigo-400 disabled:opacity-50"
+                className="flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
               >
                 {loading ? "Creating account…" : "Sign up"}
               </button>
             </div>
 
-            <p className="mt-8 text-center text-sm text-slate-400">
+            <p className="mt-8 text-center text-sm text-slate-600">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
+                className="font-semibold text-slate-900 hover:underline"
               >
                 Sign in
               </Link>

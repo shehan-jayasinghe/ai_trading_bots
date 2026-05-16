@@ -1,5 +1,6 @@
 "use client";
 
+import { authInputClass, authLabelClass } from "@/lib/auth-form-styles";
 import { loginFormSchema, zodIssuesToFieldErrors } from "@/lib/validation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -57,32 +58,28 @@ export function LoginForm() {
 
   return (
     <div className="relative flex min-h-full flex-1 flex-col justify-center px-4 py-14">
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-slate-950"
-        aria-hidden
-      />
       <div className="relative mx-auto w-full max-w-md">
         <div className="mb-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-400/90">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Deriv AI
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
             Sign in
           </h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-slate-600">
             Email and password to continue
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-black/40 backdrop-blur-md"
+          className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
           noValidate
         >
           {(formError || urlErrorMessage) && (
             <p
               role="alert"
-              className="mb-6 rounded-lg border border-red-500/30 bg-red-950/50 px-4 py-3 text-sm text-red-200"
+              className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
             >
               {formError ?? urlErrorMessage}
             </p>
@@ -92,7 +89,7 @@ export function LoginForm() {
             <div className="space-y-2">
               <label
                 htmlFor="login-email"
-                className="text-sm font-medium text-slate-200"
+                className={authLabelClass}
               >
                 Email
               </label>
@@ -109,22 +106,18 @@ export function LoginForm() {
                     return n;
                   });
                 }}
-                className={`w-full rounded-xl border bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:ring-2 ${
-                  fieldErrors.email
-                    ? "border-red-500/60 focus:ring-red-500/25"
-                    : "border-white/10 focus:border-indigo-500/50 focus:ring-indigo-500/20"
-                }`}
+                className={authInputClass(!!fieldErrors.email)}
                 placeholder="you@example.com"
               />
               {fieldErrors.email && (
-                <p className="text-sm text-red-400">{fieldErrors.email}</p>
+                <p className="text-sm text-red-600">{fieldErrors.email}</p>
               )}
             </div>
 
             <div className="space-y-2">
               <label
                 htmlFor="login-password"
-                className="text-sm font-medium text-slate-200"
+                className={authLabelClass}
               >
                 Password
               </label>
@@ -141,32 +134,28 @@ export function LoginForm() {
                     return n;
                   });
                 }}
-                className={`w-full rounded-xl border bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:ring-2 ${
-                  fieldErrors.password
-                    ? "border-red-500/60 focus:ring-red-500/25"
-                    : "border-white/10 focus:border-indigo-500/50 focus:ring-indigo-500/20"
-                }`}
+                className={authInputClass(!!fieldErrors.password)}
                 placeholder="••••••••"
               />
               {fieldErrors.password && (
-                <p className="text-sm text-red-400">{fieldErrors.password}</p>
+                <p className="text-sm text-red-600">{fieldErrors.password}</p>
               )}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 flex w-full justify-center rounded-xl bg-indigo-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-900/30 transition hover:bg-indigo-400 disabled:opacity-50"
+              className="mt-2 flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </div>
 
-          <p className="mt-8 text-center text-sm text-slate-400">
+          <p className="mt-8 text-center text-sm text-slate-600">
             No account?{" "}
             <Link
               href="/signup"
-              className="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
+              className="font-semibold text-slate-900 hover:underline"
             >
               Create one
             </Link>

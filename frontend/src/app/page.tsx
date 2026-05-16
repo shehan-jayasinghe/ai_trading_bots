@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { SignOutButton } from "@/components/sign-out-button";
+import { WorkflowsDashboard } from "@/components/workflows/workflows-dashboard";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
@@ -9,25 +10,26 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col text-slate-50">
-      <header className="border-b border-white/10 bg-slate-900/80 px-6 py-4 backdrop-blur">
+    <div className="flex min-h-full flex-1 flex-col bg-white text-slate-900">
+      <header className="border-b border-slate-200 bg-white px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="text-sm font-semibold uppercase tracking-widest text-indigo-400/90">
+          <span className="text-sm font-semibold uppercase tracking-widest text-slate-600">
             Deriv AI
           </span>
           <SignOutButton />
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
-        <h1 className="text-2xl font-semibold text-white">
+        <h1 className="text-2xl font-semibold text-slate-900">
           Welcome
           {session.user?.email ? (
-            <span className="text-slate-400"> — {session.user.email}</span>
+            <span className="text-slate-500"> — {session.user.email}</span>
           ) : null}
         </h1>
-        <p className="mt-4 max-w-xl text-slate-400">
-          You are signed in. Build your workflows and tools from here.
+        <p className="mt-2 text-slate-600">
+          Manage your trading workflows below.
         </p>
+        <WorkflowsDashboard />
       </main>
     </div>
   );

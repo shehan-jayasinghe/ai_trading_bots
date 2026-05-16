@@ -1,15 +1,23 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth-store";
 import { signOut } from "next-auth/react";
 
 export function SignOutButton() {
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+
   return (
-    <button
+    <Button
       type="button"
-      onClick={() => signOut({ callbackUrl: "/login" })}
-      className="rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+      variant="outline"
+      size="sm"
+      onClick={() => {
+        clearAuth();
+        void signOut({ callbackUrl: "/login" });
+      }}
     >
       Sign out
-    </button>
+    </Button>
   );
 }
