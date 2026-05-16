@@ -25,6 +25,11 @@ class NotFoundError(AppError):
     detail = "Not found"
 
 
+class BadRequestError(AppError):
+    status_code = 400
+    detail = "Bad request"
+
+
 class DatabaseError(AppError):
     status_code = 503
     detail = "Database unavailable"

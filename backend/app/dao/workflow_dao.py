@@ -47,6 +47,17 @@ class WorkflowDAO:
             raise DatabaseError() from exc
 
     @staticmethod
+    async def update_workflow(db: AsyncSession, workflow: Workflow) -> Workflow:
+        try:
+            await db.commit()
+            await db.refresh(workflow)
+            return workflow
+        except SQLAlchemyError as exc:
+            await db.rollback()
+            logger.exception("update_workflow failed workflow_id=%s", workflow.id)
+            raise DatabaseError() from exc
+
+    @staticmethod
     async def delete_workflow(db: AsyncSession, workflow: Workflow) -> None:
         try:
             await db.delete(workflow)

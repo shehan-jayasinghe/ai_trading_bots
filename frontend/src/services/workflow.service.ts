@@ -1,5 +1,5 @@
 import { apiRequest } from "@/services/api-client";
-import type { Workflow, WorkflowCreate } from "@/types/workflow";
+import type { Workflow, WorkflowCreate, WorkflowUpdate } from "@/types/workflow";
 
 export function listWorkflows() {
   return apiRequest<Workflow[]>("/workflows");
@@ -11,6 +11,18 @@ export function createWorkflow(body: WorkflowCreate) {
 
 export function getWorkflow(id: string) {
   return apiRequest<Workflow>(`/workflows/${id}`);
+}
+
+export function updateWorkflow(id: string, body: WorkflowUpdate) {
+  return apiRequest<Workflow>(`/workflows/${id}`, { method: "PATCH", body });
+}
+
+export function beginEditWorkflow(id: string) {
+  return apiRequest<Workflow>(`/workflows/${id}/edit`, { method: "POST" });
+}
+
+export function runWorkflow(id: string) {
+  return apiRequest<Workflow>(`/workflows/${id}/run`, { method: "POST" });
 }
 
 export function deleteWorkflow(id: string) {
