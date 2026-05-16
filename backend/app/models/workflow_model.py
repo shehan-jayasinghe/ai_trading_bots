@@ -7,26 +7,18 @@ from app.db.postgres import Base
 
 
 class Workflow(Base):
-
-    __tablename__ = "workflows"
+    __tablename__ = "Workflow"
 
     id = Column(String, primary_key=True)
-
-    user_id = Column(String)
-
+    user_id = Column("userId", String)
     name = Column(String)
-
-    trading_pair = Column(String)
-
-    trading_type = Column(String)
-
+    trading_pair = Column("tradingPair", String)
+    trading_type = Column("tradingType", String)
     status = Column(String)
-
-    starting_time = Column(DateTime(timezone=True))
-
-    one_day_minimum_trade = Column(String)
-
+    starting_time = Column("startingTime", DateTime(timezone=True))
+    one_day_minimum_trade = Column("oneDayMinimumTrade", String)
     created_at = Column(
+        "createdAt",
         DateTime(timezone=True),
-        server_default=func.now()
+        server_default=func.now(),
     )

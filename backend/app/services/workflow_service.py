@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NotFoundError
 from app.dao.workflow_dao import WorkflowDAO
 from app.models.workflow_model import Workflow
 from app.schemas.workflow_schema import WorkflowCreate
@@ -31,10 +32,10 @@ class WorkflowService:
         db: AsyncSession,
         workflow_id: str,
         user_id: str,
-    ) -> Workflow | None:
+    ) -> Workflow:
         workflow = await WorkflowDAO.get_workflow(db, workflow_id)
         if workflow is None or workflow.user_id != user_id:
-            return None
+            raise NotFoundError("Workflow not found")
         return workflow
 
     @staticmethod
@@ -46,11 +47,8 @@ class WorkflowService:
         db: AsyncSession,
         workflow_id: str,
         user_id: str,
-    ) -> bool:
+    ) -> None:
         workflow = await WorkflowService.get_workflow_for_user(
             db, workflow_id, user_id
         )
-        if workflow is None:
-            return False
         await WorkflowDAO.delete_workflow(db, workflow)
-        return True

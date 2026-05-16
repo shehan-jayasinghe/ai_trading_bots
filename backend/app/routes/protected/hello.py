@@ -8,7 +8,7 @@ router = APIRouter(tags=["protected"])
 
 
 @router.get("/hello/secure")
-def secure_hello(user: User = Depends(get_current_user)):
+async def secure_hello(user: User = Depends(get_current_user)):
     return {
         "message": "authenticated route",
         "user": UserResponse.model_validate(user),

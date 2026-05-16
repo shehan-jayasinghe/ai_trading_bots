@@ -4,7 +4,7 @@ from app.db.postgres import Base
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "User"
 
     id = Column(String, primary_key=True)
     email = Column(String)

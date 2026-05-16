@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.dependencies import get_postgres_db
@@ -38,8 +38,6 @@ async def get_workflow(
     workflow = await WorkflowService.get_workflow_for_user(
         db, workflow_id, current_user.id
     )
-    if workflow is None:
-        raise HTTPException(status_code=404, detail="Workflow not found")
     return WorkflowResponse.model_validate(workflow)
 
 
@@ -49,8 +47,6 @@ async def delete_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    deleted = await WorkflowService.delete_workflow_for_user(
+    await WorkflowService.delete_workflow_for_user(
         db, workflow_id, current_user.id
     )
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Workflow not found")
