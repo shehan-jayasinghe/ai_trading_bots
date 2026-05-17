@@ -11,6 +11,7 @@ type WorkflowState = {
   createWorkflow: (data: WorkflowCreate) => Promise<void>;
   beginEditWorkflow: (id: string) => Promise<void>;
   updateWorkflow: (id: string, data: WorkflowUpdate) => Promise<void>;
+  completeWorkflow: (id: string) => Promise<void>;
   runWorkflow: (id: string) => Promise<void>;
   deleteWorkflow: (id: string) => Promise<void>;
 };
@@ -48,6 +49,12 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   updateWorkflow: async (id, data) => {
     set({ error: null });
     await workflowService.updateWorkflow(id, data);
+    await get().fetchWorkflows();
+  },
+
+  completeWorkflow: async (id) => {
+    set({ error: null });
+    await workflowService.completeWorkflow(id);
     await get().fetchWorkflows();
   },
 

@@ -1,4 +1,4 @@
-export type WorkflowStatus = "draft" | "edit" | "run";
+export type WorkflowStatus = "draft" | "edit" | "completed" | "run";
 
 export type WorkflowCreate = {
   name: string;

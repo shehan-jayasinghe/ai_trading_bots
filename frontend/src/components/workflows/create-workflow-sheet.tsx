@@ -18,6 +18,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useWorkflowStore } from "@/stores/workflow-store";
 import type { WorkflowCreate } from "@/types/workflow";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const defaultForm = (): WorkflowCreate => ({
   name: "",
@@ -43,10 +44,12 @@ export function CreateWorkflowSheet() {
       await createWorkflow(form);
       setForm(defaultForm());
       setOpen(false);
+      toast.success("Workflow created");
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to create workflow",
-      );
+      const message =
+        err instanceof ApiError ? err.message : "Failed to create workflow";
+      setError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

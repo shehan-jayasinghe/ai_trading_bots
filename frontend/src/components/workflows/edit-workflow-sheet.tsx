@@ -16,6 +16,7 @@ import { ApiError } from "@/services/api-client";
 import { useWorkflowStore } from "@/stores/workflow-store";
 import type { Workflow, WorkflowUpdate } from "@/types/workflow";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   workflow: Workflow | null;
@@ -45,9 +46,10 @@ export function EditWorkflowSheet({ workflow, open, onOpenChange }: Props) {
     setForm(toForm(workflow));
     setError(null);
     void beginEditWorkflow(workflow.id).catch((err) => {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to enter edit mode",
-      );
+      const message =
+        err instanceof ApiError ? err.message : "Failed to enter edit mode";
+      setError(message);
+      toast.error(message);
     });
   }, [open, workflow, beginEditWorkflow]);
 
@@ -59,10 +61,12 @@ export function EditWorkflowSheet({ workflow, open, onOpenChange }: Props) {
     try {
       await updateWorkflow(workflow.id, form);
       onOpenChange(false);
+      toast.success("Workflow saved");
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to save workflow",
-      );
+      const message =
+        err instanceof ApiError ? err.message : "Failed to save workflow";
+      setError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

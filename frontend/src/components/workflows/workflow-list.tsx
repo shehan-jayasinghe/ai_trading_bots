@@ -1,13 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EditWorkflowSheet } from "@/components/workflows/edit-workflow-sheet";
+import { WorkflowRowActions } from "@/components/workflows/workflow-row-actions";
 import { WorkflowStatusBadge } from "@/components/workflows/workflow-status-badge";
+import { formatDateTime } from "@/lib/format-datetime";
 import { ApiError } from "@/services/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { useWorkflowStore } from "@/stores/workflow-store";
 import type { Workflow } from "@/types/workflow";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function WorkflowList() {
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -15,23 +18,56 @@ export function WorkflowList() {
   const isLoading = useWorkflowStore((s) => s.isLoading);
   const error = useWorkflowStore((s) => s.error);
   const fetchWorkflows = useWorkflowStore((s) => s.fetchWorkflows);
+  const completeWorkflow = useWorkflowStore((s) => s.completeWorkflow);
   const runWorkflow = useWorkflowStore((s) => s.runWorkflow);
   const deleteWorkflow = useWorkflowStore((s) => s.deleteWorkflow);
   const [editing, setEditing] = useState<Workflow | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Workflow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (accessToken) void fetchWorkflows();
   }, [accessToken, fetchWorkflows]);
 
-  async function handleRun(id: string) {
-    setActionError(null);
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
+
+  async function handleComplete(id: string, name: string) {
+    try {
+      await completeWorkflow(id);
+      toast.success(`"${name}" marked as completed`);
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to complete workflow",
+      );
+    }
+  }
+
+  async function handleRun(id: string, name: string) {
     try {
       await runWorkflow(id);
+      toast.success(`"${name}" is now running`);
     } catch (err) {
-      setActionError(
+      toast.error(
         err instanceof ApiError ? err.message : "Failed to start workflow",
       );
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteWorkflow(deleteTarget.id);
+      toast.success(`"${deleteTarget.name}" deleted`);
+      setDeleteTarget(null);
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to delete workflow",
+      );
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -44,7 +80,23 @@ export function WorkflowList() {
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 w-full">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+        title="Delete workflow?"
+        description={
+          deleteTarget
+            ? `Are you sure you want to delete "${deleteTarget.name}"? This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+        loading={deleting}
+        onConfirm={() => void confirmDelete()}
+      />
       <EditWorkflowSheet
         workflow={editing}
         open={editing !== null}
@@ -52,61 +104,67 @@ export function WorkflowList() {
           if (!open) setEditing(null);
         }}
       />
-      {(error || actionError) && (
-        <p className="mb-4 text-sm text-red-600" role="alert">
-          {error ?? actionError}
-        </p>
-      )}
       {workflows.length === 0 ? (
         <p className="text-sm text-slate-500">
           No workflows yet. Create one to get started.
         </p>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
-          {workflows.map((w) => (
-            <li
-              key={w.id}
-              className="flex flex-wrap items-center justify-between gap-4 px-4 py-4"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium text-slate-900">{w.name}</p>
-                  <WorkflowStatusBadge status={w.status} />
-                </div>
-                <p className="text-sm text-slate-500">
-                  {w.trading_pair} · {w.trading_type}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={w.status === "run"}
-                  onClick={() => setEditing(w)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={w.status === "run"}
-                  onClick={() => void handleRun(w.id)}
-                >
-                  Run
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => void deleteWorkflow(w.id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="w-full overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="w-full table-fixed text-left text-sm">
+            <colgroup>
+              <col className="w-[18%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
+              <col className="w-[8%]" />
+              <col className="w-[18%]" />
+              <col className="w-[18%]" />
+              <col className="w-[18%]" />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Pair</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Min / day</th>
+                <th className="px-4 py-3">Start time</th>
+                <th className="px-4 py-3">Created</th>
+                <th className="px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {workflows.map((w) => (
+                <tr key={w.id} className="text-slate-700">
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="truncate font-medium text-slate-900">
+                        {w.name}
+                      </span>
+                      <WorkflowStatusBadge status={w.status} />
+                    </div>
+                  </td>
+                  <td className="truncate px-4 py-3">{w.trading_pair}</td>
+                  <td className="truncate px-4 py-3">{w.trading_type}</td>
+                  <td className="px-4 py-3">{w.one_day_minimum_trade ?? "—"}</td>
+                  <td className="truncate px-4 py-3">
+                    {formatDateTime(w.starting_time)}
+                  </td>
+                  <td className="truncate px-4 py-3">
+                    {formatDateTime(w.created_at)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <WorkflowRowActions
+                      workflow={w}
+                      onEdit={() => setEditing(w)}
+                      onComplete={() => void handleComplete(w.id, w.name)}
+                      onRun={() => void handleRun(w.id, w.name)}
+                      onDelete={() => setDeleteTarget(w)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

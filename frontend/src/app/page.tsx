@@ -12,14 +12,14 @@ export default async function Home() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-white text-slate-900">
       <header className="border-b border-slate-200 bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <span className="text-sm font-semibold uppercase tracking-widest text-slate-600">
             Deriv AI
           </span>
           <SignOutButton />
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-12">
         <h1 className="text-2xl font-semibold text-slate-900">
           Welcome
           {session.user?.email ? (

@@ -21,6 +21,10 @@ export function beginEditWorkflow(id: string) {
   return apiRequest<Workflow>(`/workflows/${id}/edit`, { method: "POST" });
 }
 
+export function completeWorkflow(id: string) {
+  return apiRequest<Workflow>(`/workflows/${id}/complete`, { method: "POST" });
+}
+
 export function runWorkflow(id: string) {
   return apiRequest<Workflow>(`/workflows/${id}/run`, { method: "POST" });
 }
