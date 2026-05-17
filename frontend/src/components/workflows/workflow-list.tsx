@@ -9,10 +9,13 @@ import { ApiError } from "@/services/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { useWorkflowStore } from "@/stores/workflow-store";
 import type { Workflow } from "@/types/workflow";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function WorkflowList() {
+  const router = useRouter();
   const accessToken = useAuthStore((s) => s.accessToken);
   const workflows = useWorkflowStore((s) => s.workflows);
   const isLoading = useWorkflowStore((s) => s.isLoading);
@@ -136,9 +139,12 @@ export function WorkflowList() {
                 <tr key={w.id} className="text-slate-700">
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="truncate font-medium text-slate-900">
+                      <Link
+                        href={`/workflows/${w.id}`}
+                        className="truncate font-medium text-slate-900 hover:underline"
+                      >
                         {w.name}
-                      </span>
+                      </Link>
                       <WorkflowStatusBadge status={w.status} />
                     </div>
                   </td>
@@ -154,6 +160,7 @@ export function WorkflowList() {
                   <td className="px-4 py-3">
                     <WorkflowRowActions
                       workflow={w}
+                      onOpen={() => router.push(`/workflows/${w.id}`)}
                       onEdit={() => setEditing(w)}
                       onComplete={() => void handleComplete(w.id, w.name)}
                       onRun={() => void handleRun(w.id, w.name)}

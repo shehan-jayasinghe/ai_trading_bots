@@ -26,6 +26,8 @@ const defaultForm = (): WorkflowCreate => ({
   trading_type: TRADING_TYPES[0].value,
   starting_time: new Date().toISOString(),
   one_day_minimum_trade: "1",
+  deriv_app_id: "1089",
+  deriv_api_token: "",
 });
 
 export function CreateWorkflowSheet() {
@@ -125,6 +127,32 @@ export function CreateWorkflowSheet() {
                   ...f,
                   one_day_minimum_trade: e.target.value,
                 }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="wf-app-id">Deriv app ID</Label>
+            <Input
+              id="wf-app-id"
+              required
+              placeholder="1089"
+              value={form.deriv_app_id ?? ""}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, deriv_app_id: e.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="wf-api-token">Deriv API token</Label>
+            <Input
+              id="wf-api-token"
+              type="password"
+              required
+              autoComplete="off"
+              placeholder="From Deriv → API token"
+              value={form.deriv_api_token ?? ""}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, deriv_api_token: e.target.value }))
               }
             />
           </div>

@@ -2,14 +2,15 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.dependencies import get_postgres_db
+from app.handlers.workflow_handler import WorkflowHandler
 from app.middleware.auth import get_current_user
 from app.models.user_model import User
+from app.schemas.workflow_graph_schema import WorkflowGraphDefinition
 from app.schemas.workflow_schema import (
     WorkflowCreate,
     WorkflowResponse,
     WorkflowUpdate,
 )
-from app.services.workflow_service import WorkflowService
 
 router = APIRouter(prefix="/workflows", tags=["Workflows"])
 
@@ -20,7 +21,7 @@ async def create_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    workflow = await WorkflowService.create_workflow(db, current_user.id, data)
+    workflow = await WorkflowHandler.create(db, current_user.id, data)
     return WorkflowResponse.model_validate(workflow)
 
 
@@ -29,8 +30,27 @@ async def list_workflows(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    workflows = await WorkflowService.list_workflows(db, current_user.id)
+    workflows = await WorkflowHandler.list_for_user(db, current_user.id)
     return [WorkflowResponse.model_validate(w) for w in workflows]
+
+
+@router.get("/{workflow_id}/graph", response_model=WorkflowGraphDefinition | None)
+async def get_workflow_graph(
+    workflow_id: str,
+    db: AsyncSession = Depends(get_postgres_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await WorkflowHandler.get_graph(db, workflow_id, current_user.id)
+
+
+@router.put("/{workflow_id}/graph", response_model=WorkflowGraphDefinition)
+async def update_workflow_graph(
+    workflow_id: str,
+    graph: WorkflowGraphDefinition,
+    db: AsyncSession = Depends(get_postgres_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await WorkflowHandler.save_graph(db, workflow_id, current_user.id, graph)
 
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
@@ -39,9 +59,7 @@ async def get_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    workflow = await WorkflowService.get_workflow_for_user(
-        db, workflow_id, current_user.id
-    )
+    workflow = await WorkflowHandler.get(db, workflow_id, current_user.id)
     return WorkflowResponse.model_validate(workflow)
 
 
@@ -52,7 +70,7 @@ async def update_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    workflow = await WorkflowService.update_workflow(
+    workflow = await WorkflowHandler.update_metadata(
         db, workflow_id, current_user.id, data
     )
     return WorkflowResponse.model_validate(workflow)
@@ -64,9 +82,17 @@ async def begin_edit_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    workflow = await WorkflowService.begin_edit_workflow(
-        db, workflow_id, current_user.id
-    )
+    workflow = await WorkflowHandler.begin_edit(db, workflow_id, current_user.id)
+    return WorkflowResponse.model_validate(workflow)
+
+
+@router.post("/{workflow_id}/complete", response_model=WorkflowResponse)
+async def complete_workflow(
+    workflow_id: str,
+    db: AsyncSession = Depends(get_postgres_db),
+    current_user: User = Depends(get_current_user),
+):
+    workflow = await WorkflowHandler.complete(db, workflow_id, current_user.id)
     return WorkflowResponse.model_validate(workflow)
 
 
@@ -76,9 +102,7 @@ async def run_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    workflow = await WorkflowService.run_workflow(
-        db, workflow_id, current_user.id
-    )
+    workflow = await WorkflowHandler.run(db, workflow_id, current_user.id)
     return WorkflowResponse.model_validate(workflow)
 
 
@@ -88,6 +112,4 @@ async def delete_workflow(
     db: AsyncSession = Depends(get_postgres_db),
     current_user: User = Depends(get_current_user),
 ):
-    await WorkflowService.delete_workflow_for_user(
-        db, workflow_id, current_user.id
-    )
+    await WorkflowHandler.delete(db, workflow_id, current_user.id)

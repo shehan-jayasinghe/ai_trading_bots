@@ -35,6 +35,10 @@ model Workflow {
   startingTime         DateTime?
   oneDayMinimumTrade   String?
   createdAt            DateTime  @default(now())
+  graphDefinition      Json?
+  derivAppId           String?
+  derivApiToken        String?
+  lastTradeResult      Json?
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 model Account {

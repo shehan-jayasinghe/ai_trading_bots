@@ -31,6 +31,8 @@ function toForm(workflow: Workflow): WorkflowUpdate {
     trading_type: workflow.trading_type,
     starting_time: workflow.starting_time ?? new Date().toISOString(),
     one_day_minimum_trade: workflow.one_day_minimum_trade ?? "1",
+    deriv_app_id: workflow.deriv_app_id ?? "1089",
+    deriv_api_token: "",
   };
 }
 
@@ -145,6 +147,40 @@ export function EditWorkflowSheet({ workflow, open, onOpenChange }: Props) {
                 }))
               }
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-wf-app-id">Deriv app ID</Label>
+            <Input
+              id="edit-wf-app-id"
+              required
+              placeholder="1089"
+              value={form.deriv_app_id ?? ""}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, deriv_app_id: e.target.value }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-wf-api-token">Deriv API token</Label>
+            <Input
+              id="edit-wf-api-token"
+              type="password"
+              autoComplete="off"
+              placeholder={
+                workflow.has_deriv_api_token
+                  ? "Leave blank to keep current token"
+                  : "From Deriv → API token"
+              }
+              value={form.deriv_api_token ?? ""}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, deriv_api_token: e.target.value }))
+              }
+            />
+            {workflow.has_deriv_api_token && (
+              <p className="text-xs text-muted-foreground">
+                API token is saved. Enter a new value only to replace it.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-wf-time">Starting time</Label>

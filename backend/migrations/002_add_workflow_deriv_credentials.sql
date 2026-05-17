@@ -1,0 +1,8 @@
+ALTER TABLE "Workflow"
+ADD COLUMN IF NOT EXISTS "derivAppId" TEXT;
+
+ALTER TABLE "Workflow"
+ADD COLUMN IF NOT EXISTS "derivApiToken" TEXT;
+
+ALTER TABLE "Workflow"
+ADD COLUMN IF NOT EXISTS "lastTradeResult" JSONB;

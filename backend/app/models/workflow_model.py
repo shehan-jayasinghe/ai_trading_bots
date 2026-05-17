@@ -1,6 +1,7 @@
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 
 from app.db.postgres import Base
@@ -22,3 +23,7 @@ class Workflow(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+    graph_definition = Column("graphDefinition", JSONB, nullable=True)
+    deriv_app_id = Column("derivAppId", String, nullable=True)
+    deriv_api_token = Column("derivApiToken", String, nullable=True)
+    last_trade_result = Column("lastTradeResult", JSONB, nullable=True)

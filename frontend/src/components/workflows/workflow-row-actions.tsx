@@ -3,10 +3,11 @@
 import { Select } from "@/components/ui/select";
 import type { Workflow } from "@/types/workflow";
 
-type WorkflowAction = "edit" | "complete" | "run" | "delete";
+type WorkflowAction = "open" | "edit" | "complete" | "run" | "delete";
 
 type Props = {
   workflow: Workflow;
+  onOpen: () => void;
   onEdit: () => void;
   onComplete: () => void;
   onRun: () => void;
@@ -15,14 +16,20 @@ type Props = {
 
 export function WorkflowRowActions({
   workflow,
+  onOpen,
   onEdit,
   onComplete,
   onRun,
   onDelete,
 }: Props) {
+  const canOpen = true;
   const canEdit = workflow.status !== "run";
+  const hasDerivCredentials =
+    Boolean(workflow.deriv_app_id?.trim()) && workflow.has_deriv_api_token;
   const canComplete =
-    workflow.status !== "run" && workflow.status !== "completed";
+    workflow.status !== "run" &&
+    workflow.status !== "completed" &&
+    hasDerivCredentials;
   const canRun = workflow.status === "completed";
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -31,6 +38,9 @@ export function WorkflowRowActions({
     if (!action) return;
 
     switch (action) {
+      case "open":
+        onOpen();
+        break;
       case "edit":
         onEdit();
         break;
@@ -55,6 +65,9 @@ export function WorkflowRowActions({
     >
       <option value="" disabled>
         Actions
+      </option>
+      <option value="open" disabled={!canOpen}>
+        Open editor
       </option>
       <option value="edit" disabled={!canEdit}>
         Edit
