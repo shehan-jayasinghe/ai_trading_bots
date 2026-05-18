@@ -1,5 +1,5 @@
 """LangGraph node handlers (one function per agent kind)."""
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 from executor.agents.data import fetch_market_data
 from executor.agents.decision_crew import run_decision
@@ -15,50 +15,50 @@ ALLOWED_AGENT_KINDS = frozenset(
 
 
 async def node_data(state: TradeState) -> TradeState:
-    state["market_packet"] = await fetch_market_data(state["snapshot"])
+    state.market_packet = await fetch_market_data(state.snapshot)
     return state
 
 
 async def node_indicator(state: TradeState) -> TradeState:
-    state["indicator_signal"] = compute_indicator(state.get("market_packet", {}))
+    state.indicator_signal = compute_indicator(state.market_packet)
     return state
 
 
 async def node_rag(state: TradeState) -> TradeState:
-    state["rag_context"] = await load_rag(state["snapshot"])
+    state.rag_context = await load_rag(state.snapshot)
     return state
 
 
 async def node_decision(state: TradeState) -> TradeState:
-    state["decision"] = await run_decision(
-        state["snapshot"],
-        state.get("market_packet", {}),
-        state.get("indicator_signal", {}),
-        state.get("rag_context", {}),
+    state.decision = await run_decision(
+        state.snapshot,
+        state.market_packet,
+        state.indicator_signal,
+        state.rag_context,
     )
     return state
 
 
 async def node_mm(state: TradeState) -> TradeState:
-    state["stake"] = await compute_stake(state["snapshot"], state.get("decision", {}))
+    state.stake = await compute_stake(state.snapshot, state.decision)
     return state
 
 
 async def node_trade(state: TradeState) -> TradeState:
-    state["trade_result"] = await execute_trade(
-        state["snapshot"],
-        state.get("decision", {}),
-        state.get("stake", 0.0),
+    state.trade_result = await execute_trade(
+        state.snapshot,
+        state.decision,
+        state.stake,
     )
     return state
 
 
 async def node_rag_write(state: TradeState) -> TradeState:
-    await save_rag(state["snapshot"], state.get("trade_result", {}))
+    await save_rag(state.snapshot, state.trade_result)
     return state
 
 
-AGENT_HANDLERS: dict[str, Any] = {
+AGENT_HANDLERS: dict[str, Callable[[TradeState], Awaitable[TradeState]]] = {
     "data": node_data,
     "indicator": node_indicator,
     "rag": node_rag,

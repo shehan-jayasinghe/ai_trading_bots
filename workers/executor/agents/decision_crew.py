@@ -5,7 +5,7 @@ from typing import Any
 
 from shared.events import WorkflowSnapshot
 from shared.settings import settings
-
+from crewai import Agent, Crew, Process, Task
 
 def _angle_vote(market: dict) -> str:
     ticks = market.get("ticks") or []
@@ -72,7 +72,6 @@ def _run_crewai_decision(
     indicator: dict,
     rag: dict,
 ) -> dict[str, Any]:
-    from crewai import Agent, Crew, Process, Task
 
     context = json.dumps(
         {"workflow": snapshot.name, "market": market, "indicator": indicator, "rag": rag}

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import copy
 import logging
 from typing import Any, Callable, Awaitable
 
@@ -97,9 +96,9 @@ def _parallel_runner(defn: dict[str, Any], parallel_id: str) -> Callable[[TradeS
             handler = AGENT_HANDLERS.get(kind or "")
             if not handler:
                 raise ValueError(f"Unknown agent kind: {kind}")
-            return await handler(copy.deepcopy(state))
+            return await handler(state.model_copy(deep=True))
 
-        merged = copy.deepcopy(state)
+        merged = state.model_copy(deep=True)
         for partial in await asyncio.gather(*[run_child(c) for c in children]):
             for key in (
                 "market_packet",
@@ -109,8 +108,9 @@ def _parallel_runner(defn: dict[str, Any], parallel_id: str) -> Callable[[TradeS
                 "stake",
                 "trade_result",
             ):
-                if partial.get(key):
-                    merged[key] = partial[key]
+                value = getattr(partial, key)
+                if value:
+                    setattr(merged, key, value)
         return merged
 
     return run_parallel
@@ -118,7 +118,7 @@ def _parallel_runner(defn: dict[str, Any], parallel_id: str) -> Callable[[TradeS
 
 def _decision_router(next_node_id: str) -> Callable[[TradeState], str]:
     def route(state: TradeState) -> str:
-        if (state.get("decision") or {}).get("action", "skip") == "skip":
+        if (state.decision or {}).get("action", "skip") == "skip":
             return "__end__"
         return next_node_id
 

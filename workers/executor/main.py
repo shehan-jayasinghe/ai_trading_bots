@@ -24,7 +24,7 @@ async def handle_execute(data: dict) -> None:
 
     while trades_done < one_day_minimum_trade:
         result = await run_one_attempt(event.snapshot, event.run_id)
-        trade_result = result.get("trade_result") or {}
+        trade_result = result.trade_result or {}
         if trade_result and trade_result.get("status") in ("filled", "error"):
             await save_last_trade(
                 event.snapshot.workflow_id,
@@ -35,13 +35,13 @@ async def handle_execute(data: dict) -> None:
             trades_done += 1
         logger.info(
             "attempt=%s action=%s trades_done=%s/%s",
-            result.get("attempt_id"),
-            (result.get("decision") or {}).get("action"),
+            result.attempt_id,
+            (result.decision or {}).get("action"),
             trades_done,
             one_day_minimum_trade,
         )
-        if result.get("error"):
-            logger.error("attempt error: %s", result["error"])
+        if result.error:
+            logger.error("attempt error: %s", result.error)
             break
 
     logger.info("run finished run_id=%s trades_done=%s", event.run_id, trades_done)
