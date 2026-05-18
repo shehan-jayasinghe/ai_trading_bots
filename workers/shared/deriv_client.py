@@ -188,3 +188,112 @@ async def place_rise_fall_trade(
             "symbol": symbol,
             "direction": direction,
         }
+
+
+def parse_contract_result(final_poc: dict[str, Any] | None) -> tuple[float, str | None]:
+    """Extract (profit, status) from proposal_open_contract response."""
+    if not final_poc:
+        return 0.0, None
+    poc_data = final_poc.get("proposal_open_contract", {}) if isinstance(final_poc, dict) else {}
+    status = poc_data.get("status")
+    raw_profit = poc_data.get("profit")
+    profit = float(raw_profit) if raw_profit is not None else 0.0
+    return profit, status
+
+
+def _contract_is_settled(poc: dict[str, Any] | None) -> bool:
+    if not poc:
+        return False
+    data = poc.get("proposal_open_contract", {}) if isinstance(poc, dict) else {}
+    status = str(data.get("status", "")).lower()
+    terminal = {"won", "lost", "expired", "sold"}
+    return bool(data.get("is_sold")) or status in terminal
+
+
+def outcome_from_profit(profit: float, status: str | None) -> str:
+    st = (status or "").lower()
+    if profit > 0 or st == "won":
+        return "win"
+    if st in ("lost", "expired") or profit < 0:
+        return "loss"
+    if st == "sold":
+        return "win" if profit >= 0 else "loss"
+    return "pending"
+
+
+async def monitor_contract(
+    *,
+    app_id: str | None,
+    token: str,
+    contract_id: str,
+    poll_interval: float = 1.0,
+    timeout_sec: float = 120.0,
+    endpoint: str = DEFAULT_WS_ENDPOINT,
+    request_timeout_sec: float = 30.0,
+) -> dict[str, Any] | None:
+    """Poll proposal_open_contract until the contract is closed or timeout."""
+    loop = asyncio.get_running_loop()
+    end_time = loop.time() + timeout_sec
+    last: dict[str, Any] | None = None
+
+    while loop.time() < end_time:
+        try:
+            poc = await deriv_request(
+                app_id=app_id,
+                token=token,
+                endpoint=endpoint,
+                timeout_sec=request_timeout_sec,
+                payload={"proposal_open_contract": 1, "contract_id": contract_id},
+            )
+        except Exception as exc:
+            logger.warning("monitor_contract poll failed: %s", exc)
+            await asyncio.sleep(poll_interval)
+            continue
+
+        last = poc
+        if _contract_is_settled(poc):
+            data = poc.get("proposal_open_contract", {}) or {}
+            logger.info(
+                "contract %s settled status=%s profit=%s",
+                contract_id,
+                data.get("status"),
+                data.get("profit"),
+            )
+            return last
+
+        await asyncio.sleep(poll_interval)
+
+    logger.warning(
+        "monitor_contract timeout after %.0fs contract_id=%s",
+        timeout_sec,
+        contract_id,
+    )
+    return last
+
+
+async def wait_for_settlement(
+    *,
+    app_id: str | None,
+    token: str,
+    contract_id: str,
+    poll_interval: float = 1.0,
+    timeout_sec: float = 120.0,
+) -> dict[str, Any]:
+    """Return settlement fields: outcome, profit, contract_status."""
+    poc = await monitor_contract(
+        app_id=app_id,
+        token=token,
+        contract_id=contract_id,
+        poll_interval=poll_interval,
+        timeout_sec=timeout_sec,
+    )
+    profit, status = parse_contract_result(poc)
+    outcome = outcome_from_profit(profit, status)
+    if not _contract_is_settled(poc):
+        outcome = "pending"
+    return {
+        "outcome": outcome,
+        "profit": profit,
+        "contract_status": status,
+        "settlement": poc.get("proposal_open_contract") if poc else None,
+    }

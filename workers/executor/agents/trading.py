@@ -1,7 +1,7 @@
 import logging
 from uuid import uuid4
 
-from shared.deriv_client import place_rise_fall_trade
+from shared.deriv_client import place_rise_fall_trade, wait_for_settlement
 from shared.events import WorkflowSnapshot
 
 logger = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ async def execute_trade(
             "symbol": snapshot.trading_pair,
             "source": "stub",
             "outcome": outcome,
+            "profit": stake * 0.95 if outcome == "win" else -stake,
         }
 
     try:
@@ -41,8 +42,9 @@ async def execute_trade(
             currency=(snapshot.account_currency or "USD").upper(),
             contract_strategy=snapshot.contract_strategy or "rise_fall",
         )
-        return {
-            "trade_id": placed.get("contract_id") or str(uuid4()),
+        contract_id = placed.get("contract_id")
+        trade_result = {
+            "trade_id": contract_id or str(uuid4()),
             "status": "filled",
             "direction": action,
             "stake": stake,
@@ -51,6 +53,21 @@ async def execute_trade(
             "outcome": "pending",
             **placed,
         }
+
+        if contract_id:
+            logger.info("waiting for contract settlement contract_id=%s", contract_id)
+            settlement = await wait_for_settlement(
+                app_id=snapshot.deriv_app_id,
+                token=token,
+                contract_id=str(contract_id),
+                poll_interval=1.0,
+                timeout_sec=120.0,
+            )
+            trade_result.update(settlement)
+            if settlement.get("outcome") in ("win", "loss"):
+                trade_result["status"] = "settled"
+
+        return trade_result
     except Exception as exc:
         logger.exception("Deriv trade failed: %s", exc)
         return {
