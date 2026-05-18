@@ -8,6 +8,13 @@ export type WorkflowCreate = {
   one_day_minimum_trade: string;
   deriv_app_id?: string;
   deriv_api_token?: string;
+  risk_capital?: number;
+  mm_cycle_trades?: number;
+  mm_target_wins?: number;
+  mm_payout?: number;
+  account_currency?: string;
+  contract_strategy?: string;
+  duration_ticks?: number;
 };
 
 export type WorkflowUpdate = Partial<WorkflowCreate>;
@@ -22,6 +29,7 @@ export type WorkflowLastTrade = {
   source?: string;
   contract_id?: string;
   error?: string;
+  outcome?: string;
 };
 
 export type Workflow = {
@@ -37,4 +45,11 @@ export type Workflow = {
   deriv_app_id: string | null;
   has_deriv_api_token: boolean;
   last_trade_result: WorkflowLastTrade | null;
+  risk_capital: number;
+  mm_cycle_trades: number;
+  mm_target_wins: number;
+  mm_payout: number;
+  account_currency: string;
+  contract_strategy: string;
+  duration_ticks: number;
 };

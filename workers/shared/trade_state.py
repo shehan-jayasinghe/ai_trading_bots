@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from shared.events import WorkflowSnapshot
+from shared.masaniello import MmSession
 
 
 class TradeState(BaseModel):
@@ -18,5 +19,7 @@ class TradeState(BaseModel):
     rag_context: dict[str, Any] = Field(default_factory=dict)
     decision: dict[str, Any] = Field(default_factory=dict)
     stake: float = 0.0
+    mm_session: MmSession | None = None
+    mm_meta: dict[str, Any] = Field(default_factory=dict)
     trade_result: dict[str, Any] = Field(default_factory=dict)
     error: str | None = None

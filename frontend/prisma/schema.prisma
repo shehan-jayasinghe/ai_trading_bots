@@ -39,6 +39,13 @@ model Workflow {
   derivAppId           String?
   derivApiToken        String?
   lastTradeResult      Json?
+  riskCapital          Float     @default(5)
+  mmCycleTrades        Int       @default(10)
+  mmTargetWins         Int       @default(6)
+  mmPayout             Float     @default(1.95)
+  accountCurrency      String    @default("USD")
+  contractStrategy     String    @default("rise_fall")
+  durationTicks        Int       @default(2)
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 model Account {

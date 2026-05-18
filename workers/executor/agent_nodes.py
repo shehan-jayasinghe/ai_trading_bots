@@ -40,7 +40,12 @@ async def node_decision(state: TradeState) -> TradeState:
 
 
 async def node_mm(state: TradeState) -> TradeState:
-    state.stake = await compute_stake(state.snapshot, state.decision)
+    stake, session, meta = await compute_stake(
+        state.snapshot, state.decision, state.mm_session
+    )
+    state.stake = stake
+    state.mm_session = session
+    state.mm_meta = meta
     return state
 
 

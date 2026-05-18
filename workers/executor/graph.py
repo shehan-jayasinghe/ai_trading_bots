@@ -3,14 +3,20 @@ from uuid import uuid4
 
 from executor.langgraph_builder import build_langgraph
 from shared.events import WorkflowSnapshot
+from shared.masaniello import MmSession
 from shared.trade_state import TradeState
 
 
-async def run_one_attempt(snapshot: WorkflowSnapshot, run_id: str) -> TradeState:
+async def run_one_attempt(
+    snapshot: WorkflowSnapshot,
+    run_id: str,
+    mm_session: MmSession | None = None,
+) -> TradeState:
     initial = TradeState(
         run_id=run_id,
         attempt_id=str(uuid4()),
         snapshot=snapshot,
+        mm_session=mm_session,
     )
 
     defn: dict[str, Any] | None = snapshot.graph_definition

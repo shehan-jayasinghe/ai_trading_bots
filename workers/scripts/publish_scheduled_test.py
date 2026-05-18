@@ -17,6 +17,13 @@ async def main() -> None:
         trading_type="binary",
         starting_time=datetime.now(timezone.utc),
         one_day_minimum_trade=2,
+        risk_capital=5.0,
+        mm_cycle_trades=10,
+        mm_target_wins=6,
+        mm_payout=1.95,
+        account_currency="USD",
+        contract_strategy="rise_fall",
+        duration_ticks=2,
     )
     event = WorkflowScheduledEvent(schedule_id=str(uuid4()), snapshot=snapshot)
     producer = await create_producer()

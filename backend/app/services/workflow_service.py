@@ -28,6 +28,13 @@ class WorkflowService:
             "one_day_minimum_trade": data.one_day_minimum_trade,
             "deriv_app_id": (data.deriv_app_id or "").strip() or None,
             "deriv_api_token": (data.deriv_api_token or "").strip() or None,
+            "risk_capital": data.risk_capital,
+            "mm_cycle_trades": data.mm_cycle_trades,
+            "mm_target_wins": data.mm_target_wins,
+            "mm_payout": data.mm_payout,
+            "account_currency": (data.account_currency or "USD").strip().upper(),
+            "contract_strategy": data.contract_strategy or "rise_fall",
+            "duration_ticks": data.duration_ticks,
             "status": WorkflowStatus.DRAFT.value,
         }
         return await WorkflowDAO.create_workflow(db, workflow_data)

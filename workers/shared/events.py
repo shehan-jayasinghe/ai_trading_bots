@@ -17,6 +17,13 @@ class WorkflowSnapshot(BaseModel):
     graph_definition: dict[str, Any] | None = None
     deriv_app_id: str | None = None
     deriv_api_token: str | None = None
+    risk_capital: float = 5.0
+    mm_cycle_trades: int = 10
+    mm_target_wins: int = 6
+    mm_payout: float = 1.95
+    account_currency: str = "USD"
+    contract_strategy: str = "rise_fall"
+    duration_ticks: int = 2
 
 
 class WorkflowScheduledEvent(BaseModel):

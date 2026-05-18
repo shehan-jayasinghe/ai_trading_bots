@@ -1,6 +1,4 @@
-from sqlalchemy import Column
-from sqlalchemy import String
-from sqlalchemy import DateTime
+from sqlalchemy import Column, Float, Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 
@@ -27,3 +25,10 @@ class Workflow(Base):
     deriv_app_id = Column("derivAppId", String, nullable=True)
     deriv_api_token = Column("derivApiToken", String, nullable=True)
     last_trade_result = Column("lastTradeResult", JSONB, nullable=True)
+    risk_capital = Column("riskCapital", Float, default=5.0)
+    mm_cycle_trades = Column("mmCycleTrades", Integer, default=10)
+    mm_target_wins = Column("mmTargetWins", Integer, default=6)
+    mm_payout = Column("mmPayout", Float, default=1.95)
+    account_currency = Column("accountCurrency", String, default="USD")
+    contract_strategy = Column("contractStrategy", String, default="rise_fall")
+    duration_ticks = Column("durationTicks", Integer, default=2)

@@ -18,13 +18,16 @@ async def execute_trade(
 
     token = (snapshot.deriv_api_token or "").strip()
     if not token:
+        stub_id = str(uuid4())
+        outcome = "win" if int(stub_id.replace("-", "")[:8], 16) % 2 == 0 else "loss"
         return {
-            "trade_id": str(uuid4()),
+            "trade_id": stub_id,
             "status": "filled",
             "direction": action,
             "stake": stake,
             "symbol": snapshot.trading_pair,
             "source": "stub",
+            "outcome": outcome,
         }
 
     try:
@@ -34,6 +37,9 @@ async def execute_trade(
             symbol=snapshot.trading_pair,
             direction=action,
             stake=float(stake),
+            duration=int(snapshot.duration_ticks or 2),
+            currency=(snapshot.account_currency or "USD").upper(),
+            contract_strategy=snapshot.contract_strategy or "rise_fall",
         )
         return {
             "trade_id": placed.get("contract_id") or str(uuid4()),
@@ -42,6 +48,7 @@ async def execute_trade(
             "stake": stake,
             "symbol": snapshot.trading_pair,
             "source": "deriv",
+            "outcome": "pending",
             **placed,
         }
     except Exception as exc:

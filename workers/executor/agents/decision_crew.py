@@ -7,8 +7,15 @@ from shared.events import WorkflowSnapshot
 from shared.settings import settings
 from crewai import Agent, Crew, Process, Task
 
+def _tick_value(tick) -> float:
+    if isinstance(tick, dict):
+        return float(tick.get("price") or 0)
+    return float(tick)
+
+
 def _angle_vote(market: dict) -> str:
-    ticks = market.get("ticks") or []
+    raw = market.get("prices") or market.get("ticks") or []
+    ticks = [float(p) for p in raw] if raw and isinstance(raw[0], (int, float)) else [_tick_value(t) for t in raw]
     if len(ticks) < 3:
         return "skip"
     deltas = [ticks[i] - ticks[i - 1] for i in range(1, len(ticks))]

@@ -10,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { MmConfigFields } from "@/components/workflows/mm-config-fields";
 import { TRADING_PAIRS } from "@/constants/trading-pairs";
 import { TRADING_TYPES } from "@/constants/trading-types";
 import { ApiError } from "@/services/api-client";
@@ -33,6 +34,13 @@ function toForm(workflow: Workflow): WorkflowUpdate {
     one_day_minimum_trade: workflow.one_day_minimum_trade ?? "1",
     deriv_app_id: workflow.deriv_app_id ?? "1089",
     deriv_api_token: "",
+    risk_capital: workflow.risk_capital ?? 5,
+    mm_cycle_trades: workflow.mm_cycle_trades ?? 10,
+    mm_target_wins: workflow.mm_target_wins ?? 6,
+    mm_payout: workflow.mm_payout ?? 1.95,
+    account_currency: workflow.account_currency ?? "USD",
+    contract_strategy: workflow.contract_strategy ?? "rise_fall",
+    duration_ticks: workflow.duration_ticks ?? 2,
   };
 }
 
@@ -80,14 +88,15 @@ export function EditWorkflowSheet({ workflow, open, onOpenChange }: Props) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent className="p-0">
+        <SheetHeader className="mb-0 shrink-0 border-b border-slate-200 px-6 py-5">
           <SheetTitle>Edit workflow</SheetTitle>
         </SheetHeader>
         <form
           onSubmit={(e) => void handleSubmit(e)}
-          className="flex flex-1 flex-col gap-4"
+          className="flex min-h-0 flex-1 flex-col"
         >
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
           {error && (
             <p className="text-sm text-red-600" role="alert">
               {error}
@@ -134,6 +143,7 @@ export function EditWorkflowSheet({ workflow, open, onOpenChange }: Props) {
               ))}
             </Select>
           </div>
+          <MmConfigFields form={form} setForm={setForm} idPrefix="edit-wf" />
           <div className="space-y-2">
             <Label htmlFor="edit-wf-min">Min trades per day</Label>
             <Input
@@ -197,7 +207,8 @@ export function EditWorkflowSheet({ workflow, open, onOpenChange }: Props) {
               }
             />
           </div>
-          <div className="mt-auto flex gap-3 pt-4">
+          </div>
+          <div className="flex shrink-0 gap-3 border-t border-slate-200 bg-white px-6 py-4">
             <Button type="submit" disabled={submitting} className="flex-1">
               {submitting ? "Saving…" : "Save"}
             </Button>

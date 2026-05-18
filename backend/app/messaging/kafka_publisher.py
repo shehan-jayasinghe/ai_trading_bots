@@ -31,6 +31,13 @@ async def publish_workflow_scheduled(workflow: Workflow, user_id: str) -> str | 
         graph_definition=workflow.graph_definition,
         deriv_app_id=workflow.deriv_app_id,
         deriv_api_token=workflow.deriv_api_token,
+        risk_capital=float(workflow.risk_capital or 5.0),
+        mm_cycle_trades=int(workflow.mm_cycle_trades or 10),
+        mm_target_wins=int(workflow.mm_target_wins or 6),
+        mm_payout=float(workflow.mm_payout or 1.95),
+        account_currency=workflow.account_currency or "USD",
+        contract_strategy=workflow.contract_strategy or "rise_fall",
+        duration_ticks=int(workflow.duration_ticks or 2),
     )
     event = WorkflowScheduledEvent(schedule_id=schedule_id, snapshot=snapshot)
 

@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { MmConfigFields } from "@/components/workflows/mm-config-fields";
 import { TRADING_PAIRS } from "@/constants/trading-pairs";
 import { TRADING_TYPES } from "@/constants/trading-types";
 import { ApiError } from "@/services/api-client";
@@ -28,6 +29,13 @@ const defaultForm = (): WorkflowCreate => ({
   one_day_minimum_trade: "1",
   deriv_app_id: "1089",
   deriv_api_token: "",
+  risk_capital: 5,
+  mm_cycle_trades: 10,
+  mm_target_wins: 6,
+  mm_payout: 1.95,
+  account_currency: "USD",
+  contract_strategy: "rise_fall",
+  duration_ticks: 2,
 });
 
 export function CreateWorkflowSheet() {
@@ -62,14 +70,15 @@ export function CreateWorkflowSheet() {
       <SheetTrigger asChild>
         <Button disabled={!accessToken}>Create workflow</Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent className="p-0">
+        <SheetHeader className="mb-0 shrink-0 border-b border-slate-200 px-6 py-5">
           <SheetTitle>New workflow</SheetTitle>
         </SheetHeader>
         <form
           onSubmit={(e) => void handleSubmit(e)}
-          className="flex flex-1 flex-col gap-4"
+          className="flex min-h-0 flex-1 flex-col"
         >
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
           {error && (
             <p className="text-sm text-red-600" role="alert">
               {error}
@@ -116,6 +125,7 @@ export function CreateWorkflowSheet() {
               ))}
             </Select>
           </div>
+          <MmConfigFields form={form} setForm={setForm} idPrefix="wf" />
           <div className="space-y-2">
             <Label htmlFor="wf-min">Min trades per day</Label>
             <Input
@@ -171,7 +181,8 @@ export function CreateWorkflowSheet() {
               }
             />
           </div>
-          <div className="mt-auto flex gap-3 pt-4">
+          </div>
+          <div className="flex shrink-0 gap-3 border-t border-slate-200 bg-white px-6 py-4">
             <Button type="submit" disabled={submitting} className="flex-1">
               {submitting ? "Creating…" : "Create"}
             </Button>
