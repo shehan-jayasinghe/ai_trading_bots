@@ -1,0 +1,13 @@
+---
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-west-1
+filters:
+  tag:Name: deriv-ai-bot-jenkins-dev
+hostnames:
+  - tag:Name
+groups:
+  jenkins: true
+compose:
+  ansible_user: ubuntu
+  ansible_host: public_ip_address

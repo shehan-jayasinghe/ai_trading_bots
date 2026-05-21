@@ -1,0 +1,4 @@
+.aws/credentials
+.terraform/
+*.tfstate
+*.tfstate.*
