@@ -9,6 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tutorials/week_01_openai_agents/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/backend/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/workers/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/infrastructure/terraform/environments/dev/.terraform" />
     </content>
     <orderEntry type="jdk" jdkName="uv (deriv_ai_bot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
