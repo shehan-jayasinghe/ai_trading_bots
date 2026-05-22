@@ -8,6 +8,7 @@ Phase 1: **build and push only** (no EKS deploy yet).
 |----------------------------|-------------|
 | `deriv-build-backend` | `jenkins/pipelines/build-backend.Jenkinsfile` |
 | `deriv-build-workers` | `jenkins/pipelines/build-workers.Jenkinsfile` |
+| `deriv-build-frontend` | `jenkins/pipelines/build-frontend.Jenkinsfile` |
 
 ## One-time Jenkins setup
 
@@ -36,7 +37,8 @@ Phase 1: **build and push only** (no EKS deploy yet).
 2. **Pipeline** → Definition: **Pipeline script from SCM**  
 3. SCM: your Git repo, branch `*/main` (or multibranch)  
 4. **Script Path:** `jenkins/pipelines/build-backend.Jenkinsfile`  
-5. Repeat for `deriv-build-workers` with `build-workers.Jenkinsfile`
+5. Repeat for `deriv-build-workers` with `build-workers.Jenkinsfile`  
+6. Repeat for `deriv-build-frontend` with `build-frontend.Jenkinsfile`
 
 ## Image tags
 
@@ -51,6 +53,7 @@ On branch `main`, also pushes `:latest`.
 ```bash
 aws ecr describe-images --repository-name deriv-backend --region us-west-1
 aws ecr describe-images --repository-name deriv-workers --region us-west-1
+aws ecr describe-images --repository-name deriv-frontend --region us-west-1
 ```
 
 ## Later (phase 2)

@@ -1,12 +1,12 @@
-// Build and push deriv-backend image to ECR.
-// Jenkins job: Pipeline from SCM, script path: jenkins/pipelines/build-backend.Jenkinsfile
+// Build and push deriv-frontend image to ECR.
+// Jenkins job: Pipeline from SCM, script path: jenkins/pipelines/build-frontend.Jenkinsfile
 
 pipeline {
     agent any
 
     environment {
-        IMAGE_REPO = 'deriv-backend'
-        DOCKERFILE = 'deploy/docker/backend.Dockerfile'
+        IMAGE_REPO = 'deriv-frontend'
+        DOCKERFILE = 'deploy/docker/frontend.Dockerfile'
     }
 
     stages {
@@ -19,10 +19,6 @@ pipeline {
         stage('Configure') {
             steps {
                 script {
-                /*Yes, exactly! If the git repo’s dev.env file contains the same variable, it will override the Jenkins global
-                variable for that run. In other words, the pipeline will prioritize the values from the repo if they exist;
-                otherwise, it falls back on the global ones.*/
-
                     def common = load 'jenkins/pipelines/_common.groovy'
                     def cfg = common.loadDevConfig(this)
                     env.AWS_REGION = cfg.get('AWS_REGION', env.AWS_REGION ?: 'us-west-1')
@@ -73,8 +69,8 @@ pipeline {
     post {
         success {
             echo "Pushed ${env.IMAGE_URI}"
-            writeFile file: 'build-backend-image.txt', text: "${env.IMAGE_URI}\n"
-            archiveArtifacts artifacts: 'build-backend-image.txt', onlyIfSuccessful: true
+            writeFile file: 'build-frontend-image.txt', text: "${env.IMAGE_URI}\n"
+            archiveArtifacts artifacts: 'build-frontend-image.txt', onlyIfSuccessful: true
         }
     }
 }

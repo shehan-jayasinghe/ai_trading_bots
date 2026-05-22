@@ -25,8 +25,10 @@ aws ecr get-login-password --region us-west-1 | docker login --username AWS --pa
 
 docker build -f deploy/docker/backend.Dockerfile -t "$REGISTRY/deriv-backend:latest" .
 docker build -f deploy/docker/workers.Dockerfile -t "$REGISTRY/deriv-workers:latest" .
+docker build -f deploy/docker/frontend.Dockerfile -t "$REGISTRY/deriv-frontend:latest" .
 docker push "$REGISTRY/deriv-backend:latest"
 docker push "$REGISTRY/deriv-workers:latest"
+docker push "$REGISTRY/deriv-frontend:latest"
 ```
 
 Set `image_registry` in `infrastructure/ansible/inventories/dev/group_vars/eks.yml` to `$REGISTRY`.
@@ -100,7 +102,7 @@ Jenkins pipelines: `jenkins/README.md` — `deriv-build-backend`, `deriv-build-w
 
 ```text
 deploy/
-  docker/           # backend + workers Dockerfiles
+  docker/           # backend, workers, frontend Dockerfiles
   helm/deriv-platform/
     Chart.yaml      # Bitnami postgresql + kafka dependencies
     values.yaml

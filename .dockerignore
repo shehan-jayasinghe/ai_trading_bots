@@ -5,7 +5,6 @@
 **/.pytest_cache
 **/.venv
 **/node_modules
-frontend
 tutorials
 infrastructure
 jenkins
