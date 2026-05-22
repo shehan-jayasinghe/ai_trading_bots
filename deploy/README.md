@@ -90,6 +90,12 @@ kubectl logs -n deriv-dev -l app.kubernetes.io/component=backend --tail=50
 
 ---
 
+## CI (build images)
+
+Jenkins pipelines: `jenkins/README.md` — `deriv-build-backend`, `deriv-build-workers` push to ECR.
+
+---
+
 ## Layout
 
 ```text

@@ -1,0 +1,15 @@
+.git
+.idea
+**/.idea
+**/__pycache__
+**/.pytest_cache
+**/.venv
+**/node_modules
+frontend
+tutorials
+infrastructure
+jenkins
+deploy/helm
+*.md
+.env
+**/.env

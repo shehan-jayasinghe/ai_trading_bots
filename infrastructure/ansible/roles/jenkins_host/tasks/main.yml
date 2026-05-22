@@ -16,6 +16,12 @@
 - name: Include Jenkins tasks
   ansible.builtin.import_tasks: jenkins.yml
 
+- name: Include CI tools for build pipelines
+  ansible.builtin.import_tasks: ci-tools.yml
+
+- name: Apply handlers after CI tools (jenkins user in docker group)
+  ansible.builtin.meta: flush_handlers
+
 - name: Mark Ansible Jenkins setup complete
   ansible.builtin.copy:
     dest: /var/log/ansible-jenkins-setup.done

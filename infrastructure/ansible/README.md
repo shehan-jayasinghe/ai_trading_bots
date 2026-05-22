@@ -57,7 +57,7 @@ export AWS_PROFILE=default
 
 ---
 
-## 4 — Run playbook (install Jenkins)
+## 4 — Run playbook (install Jenkins + CI tools)
 
 ```bash
 cd infrastructure/ansible
@@ -66,6 +66,10 @@ mkdir -p logs
 ansible-playbook playbooks/jenkins-host.yml -vv \
   2>&1 | tee logs/run-$(date +%Y%m%d-%H%M%S).log
 ```
+
+Installs Jenkins, **Docker**, **AWS CLI**, **kubectl**, **Helm**, adds `jenkins` to `docker` group.
+
+Set **`ECR_REGISTRY`** and **`AWS_REGION`** in Jenkins global environment variables (see `jenkins/README.md`).
 
 Wait until playbook finishes (including **Wait for Jenkins HTTP on port 8080**).
 
@@ -195,7 +199,7 @@ Full guide: `deploy/README.md`
 | File | Sets |
 |------|------|
 | `ansible.cfg` | `remote_user = ubuntu` |
-| `group_vars/jenkins.yml` | `ansible_user`, SSH key path |
+| `group_vars/jenkins.yml` | SSH, Java package, kubectl/helm versions |
 | `group_vars/eks.yml` | Helm release, ECR registry, cluster name |
 | `group_vars/eks_secrets.yml` | Postgres password, AUTH_SECRET (gitignored) |
 | `aws_ec2.yml` | EC2 lookup + `ansible_host: public_ip_address` |
