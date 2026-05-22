@@ -1,0 +1,33 @@
+# Dev overrides — use: helm upgrade -f values.yaml -f values-dev.yaml
+
+global:
+  environment: dev
+
+namespace:
+  name: deriv-dev
+
+# Set registry after: terraform output -json ecr_repository_urls
+# Example: 123456789012.dkr.ecr.us-west-1.amazonaws.com
+image:
+  registry: "" # REQUIRED: set via --set image.registry=... or eks.yml
+  tag: latest
+
+postgresql:
+  primary:
+    persistence:
+      size: 8Gi
+
+kafka:
+  controller:
+    replicaCount: 1
+  broker:
+    replicaCount: 1
+
+backend:
+  replicaCount: 1
+
+workers:
+  planner:
+    replicaCount: 1
+  executor:
+    replicaCount: 1

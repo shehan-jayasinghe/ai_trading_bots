@@ -48,6 +48,33 @@ resource "aws_iam_role_policy" "jenkins_ecr" {
   policy = data.aws_iam_policy_document.jenkins_ecr.json
 }
 
+data "aws_iam_policy_document" "jenkins_eks" {
+  statement {
+    sid    = "EKSRead"
+    effect = "Allow"
+    actions = [
+      "eks:DescribeCluster",
+      "eks:ListClusters",
+      "eks:DescribeNodegroup",
+      "eks:ListNodegroups",
+    ]
+    resources = [var.eks_cluster_arn]
+  }
+
+  statement {
+    sid       = "EKSAccessKubernetesApi"
+    effect    = "Allow"
+    actions   = ["eks:AccessKubernetesApi"]
+    resources = [var.eks_cluster_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "jenkins_eks" {
+  name   = "${var.name}-eks"
+  role   = aws_iam_role.jenkins.id
+  policy = data.aws_iam_policy_document.jenkins_eks.json
+}
+
 resource "aws_iam_instance_profile" "jenkins" {
   name = "${var.name}-profile"
   role = aws_iam_role.jenkins.name

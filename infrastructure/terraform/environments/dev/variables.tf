@@ -74,3 +74,39 @@ variable "alb_name" {
   type    = string
   default = "deriv-jenkins-dev-alb"
 }
+
+variable "eks_cluster_version" {
+  description = "Kubernetes version for EKS control plane"
+  type        = string
+  default     = "1.29"
+}
+
+variable "eks_node_instance_types" {
+  type    = list(string)
+  default = ["t3.medium"]
+}
+
+variable "eks_node_desired_size" {
+  type    = number
+  default = 1
+}
+
+variable "eks_node_min_size" {
+  type    = number
+  default = 1
+}
+
+variable "eks_node_max_size" {
+  type    = number
+  default = 2
+}
+
+variable "ecr_repository_names" {
+  description = "ECR repositories for application images"
+  type        = list(string)
+  default = [
+    "deriv-backend",
+    "deriv-workers",
+    "deriv-frontend",
+  ]
+}

@@ -40,6 +40,11 @@ variable "volume_size_gb" {
   default     = 40
 }
 
+variable "eks_cluster_arn" {
+  description = "EKS cluster ARN for Jenkins CI (kubectl / deploy pipelines)"
+  type        = string
+}
+
 variable "tags" {
   description = "Tags applied to Jenkins resources"
   type        = map(string)

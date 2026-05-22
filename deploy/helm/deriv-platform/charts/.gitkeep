@@ -1,0 +1,1 @@
+# Bitnami subcharts are vendored here after: helm dependency update .

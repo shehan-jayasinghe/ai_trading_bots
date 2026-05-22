@@ -1,0 +1,62 @@
+---
+- name: Require EKS secrets and image registry
+  ansible.builtin.assert:
+    that:
+      - postgres_password | length > 0
+      - auth_secret | length > 0
+      - image_registry | length > 0
+    fail_msg: >-
+      Copy eks_secrets.yml.example to eks_secrets.yml; set image_registry in eks.yml
+      (terraform output ecr_repository_urls).
+
+- name: Update kubeconfig for EKS cluster
+  ansible.builtin.command:
+    cmd: >-
+      aws eks update-kubeconfig
+      --region {{ aws_region }}
+      --name {{ eks_cluster_name }}
+  changed_when: false
+
+- name: Build Helm dependencies (Bitnami subcharts)
+  ansible.builtin.command:
+    cmd: helm dependency update
+    chdir: "{{ helm_chart_path }}"
+  changed_when: false
+
+- name: Ensure application secret exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ app_secret_name }}"
+        namespace: "{{ helm_namespace }}"
+      type: Opaque
+      stringData:
+        POSTGRES_PASSWORD: "{{ postgres_password }}"
+        AUTH_SECRET: "{{ auth_secret }}"
+        OPENAI_API_KEY: "{{ openai_api_key | default('', true) }}"
+
+- name: Deploy deriv-platform Helm release
+  ansible.builtin.command:
+    cmd: >-
+      helm upgrade --install {{ helm_release_name }} {{ helm_chart_path }}
+      --namespace {{ helm_namespace }}
+      --create-namespace
+      {% for f in helm_values_files %}-f {{ helm_chart_path }}/{{ f }} {% endfor %}
+      --set image.registry={{ image_registry }}
+      --set image.tag={{ image_tag }}
+      --set global.namespaceOverride={{ helm_namespace }}
+      --set namespace.name={{ helm_namespace }}
+      --set secrets.existingSecret={{ app_secret_name }}
+      --set postgresql.auth.existingSecret={{ app_secret_name }}
+      --wait
+      --timeout 20m
+  register: helm_deploy
+  changed_when: "'has been upgraded' in helm_deploy.stdout or 'deployed' in helm_deploy.stdout"
+
+- name: Show platform pods
+  ansible.builtin.command:
+    cmd: kubectl get pods -n {{ helm_namespace }}
+  changed_when: false

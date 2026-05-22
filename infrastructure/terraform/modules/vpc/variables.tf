@@ -30,6 +30,12 @@ variable "single_nat_gateway" {
   default     = true
 }
 
+variable "eks_cluster_name" {
+  description = "If set, adds Kubernetes subnet tags required for EKS load balancers"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Tags applied to VPC resources"
   type        = map(string)

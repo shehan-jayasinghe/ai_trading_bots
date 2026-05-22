@@ -1,0 +1,24 @@
+---
+# Deploy Postgres, Kafka, backend, and workers to EKS (dev).
+#
+# Prerequisites:
+#   - terraform apply (EKS + ECR)
+#   - docker images pushed to ECR
+#   - cp inventories/dev/group_vars/eks_secrets.yml.example eks_secrets.yml
+#   - set image_registry in inventories/dev/group_vars/eks.yml
+#
+# Usage:
+#   export AWS_PROFILE=default
+#   ansible-playbook playbooks/eks-platform.yml -vv
+
+- name: Deploy deriv platform to EKS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - ../inventories/dev/group_vars/eks.yml
+    - ../inventories/dev/group_vars/eks_secrets.yml
+
+  roles:
+    - eks_platform

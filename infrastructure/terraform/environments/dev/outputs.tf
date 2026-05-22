@@ -50,3 +50,23 @@ output "ansible_install_command" {
   description = "Run after terraform apply to install Jenkins on EC2"
   value       = "cd infrastructure/ansible && ansible-galaxy collection install -r requirements.yml && ansible-playbook playbooks/jenkins-host.yml -vv"
 }
+
+output "eks_cluster_name" {
+  value = module.eks.cluster_name
+}
+
+output "eks_cluster_endpoint" {
+  value = module.eks.cluster_endpoint
+}
+
+output "eks_configure_kubectl" {
+  value = module.eks.configure_kubectl_command
+}
+
+output "eks_oidc_provider_arn" {
+  value = module.eks.oidc_provider_arn
+}
+
+output "ecr_repository_urls" {
+  value = module.ecr.repository_urls
+}

@@ -177,10 +177,25 @@ ansible-playbook playbooks/jenkins-host.yml -vv
 
 ---
 
+## EKS platform (Postgres, Kafka, apps)
+
+After Terraform EKS apply and ECR image push:
+
+```bash
+cp inventories/dev/group_vars/eks_secrets.yml.example inventories/dev/group_vars/eks_secrets.yml
+# Edit secrets; set image_registry in group_vars/eks.yml
+
+ansible-playbook playbooks/eks-platform.yml -vv
+```
+
+Full guide: `deploy/README.md`
+
 ## Config files
 
 | File | Sets |
 |------|------|
 | `ansible.cfg` | `remote_user = ubuntu` |
 | `group_vars/jenkins.yml` | `ansible_user`, SSH key path |
+| `group_vars/eks.yml` | Helm release, ECR registry, cluster name |
+| `group_vars/eks_secrets.yml` | Postgres password, AUTH_SECRET (gitignored) |
 | `aws_ec2.yml` | EC2 lookup + `ansible_host: public_ip_address` |

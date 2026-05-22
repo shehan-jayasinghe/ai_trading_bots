@@ -1,0 +1,16 @@
+apiVersion: v2
+name: deriv-platform
+description: Umbrella chart for deriv-ai-bot platform (Postgres, Kafka, backend, workers)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: postgresql
+    version: "15.5.38"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: kafka
+    version: "30.1.5"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled

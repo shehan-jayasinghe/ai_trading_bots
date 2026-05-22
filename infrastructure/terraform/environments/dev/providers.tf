@@ -28,6 +28,8 @@ locals {
     Project     = var.project_name
     Environment = var.environment
   }
+
+  eks_cluster_name = "${var.project_name}-${var.environment}"
 }
 
 data "aws_route53_zone" "root" {

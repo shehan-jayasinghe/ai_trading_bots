@@ -1,0 +1,91 @@
+# Default values (all environments). Override with values-dev.yaml for dev.
+
+global:
+  environment: dev
+  # Bitnami subcharts deploy into this namespace (must match namespace.name)
+  namespaceOverride: deriv-dev
+
+namespace:
+  create: true
+  name: deriv-dev
+
+# App secret created by Ansible before helm install (see secrets.existingSecret)
+secrets:
+  existingSecret: deriv-platform-app-secrets
+  create: false
+
+image:
+  registry: ""
+  pullPolicy: IfNotPresent
+  tag: latest
+
+backend:
+  enabled: true
+  replicaCount: 1
+  repository: deriv-backend
+  port: 8000
+  env:
+    HOST: "0.0.0.0"
+    PORT: "8000"
+    RELOAD: "false"
+    KAFKA_ENABLED: "true"
+    KAFKA_TOPIC_SCHEDULED: workflow.scheduled
+
+workers:
+  enabled: true
+  repository: deriv-workers
+  planner:
+    replicaCount: 1
+  executor:
+    replicaCount: 1
+  env:
+    PLANNER_TICK_SECONDS: "30"
+    DERIV_WS_ENDPOINT: wss://ws.derivws.com/websockets/v3
+    CREWAI_TRACING_ENABLED: "false"
+
+frontend:
+  enabled: false
+
+kafkaTopics:
+  enabled: true
+  topics:
+    - name: workflow.scheduled
+      partitions: 3
+    - name: workflow.execute
+      partitions: 3
+    - name: workflow.run.status
+      partitions: 3
+
+postgresql:
+  enabled: true
+  auth:
+    username: deriv
+    database: deriv
+    existingSecret: deriv-platform-app-secrets
+    secretKeys:
+      userPasswordKey: POSTGRES_PASSWORD
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+  metrics:
+    enabled: false
+
+kafka:
+  enabled: true
+  kraft:
+    enabled: true
+  controller:
+    replicaCount: 1
+  broker:
+    replicaCount: 1
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+  metrics:
+    jmx:
+      enabled: false

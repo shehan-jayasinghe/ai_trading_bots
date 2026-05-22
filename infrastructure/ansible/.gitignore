@@ -1,3 +1,4 @@
 logs/
 *.retry
 .ansible/
+inventories/dev/group_vars/eks_secrets.yml

@@ -1,0 +1,22 @@
+---
+# EKS platform deploy (dev). Set image_registry from: terraform output -json ecr_repository_urls
+
+eks_cluster_name: deriv-ai-bot-dev
+aws_region: us-west-1
+
+helm_release_name: deriv-platform
+helm_namespace: deriv-dev
+helm_chart_path: "{{ playbook_dir }}/../../../deploy/helm/deriv-platform"
+helm_values_files:
+  - values.yaml
+  - values-dev.yaml
+
+# ECR registry host only (no trailing slash), e.g. 123456789012.dkr.ecr.us-west-1.amazonaws.com
+image_registry: ""
+
+image_tag: latest
+
+app_secret_name: deriv-platform-app-secrets
+
+postgresql_auth_username: deriv
+postgresql_auth_database: deriv
