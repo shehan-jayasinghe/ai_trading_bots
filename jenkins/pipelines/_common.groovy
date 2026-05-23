@@ -34,11 +34,16 @@ def imageTag(script) {
 }
 
 def ecrLogin(script, String region, String registry) {
+    script.echo "ECR login: region=${region}, registry=${registry}"
     script.sh """
         set -euo pipefail
+        echo "AWS caller identity:"
+        aws sts get-caller-identity
+        echo "Logging in to ECR (password not shown)..."
         aws ecr get-login-password --region ${region} | \\
           docker login --username AWS --password-stdin ${registry}
     """
+    script.echo "ECR login succeeded for ${registry}"
 }
 
 return this
