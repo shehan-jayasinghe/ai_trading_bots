@@ -21,13 +21,17 @@ type MmFields = Pick<
   | "duration_ticks"
 >;
 
-type Props = {
-  form: MmFields;
-  setForm: React.Dispatch<React.SetStateAction<MmFields>>;
+type Props<T extends MmFields> = {
+  form: T;
+  setForm: React.Dispatch<React.SetStateAction<T>>;
   idPrefix?: string;
 };
 
-export function MmConfigFields({ form, setForm, idPrefix = "wf" }: Props) {
+export function MmConfigFields<T extends MmFields>({
+  form,
+  setForm,
+  idPrefix = "wf",
+}: Props<T>) {
   return (
     <>
       <p className="text-sm font-medium text-foreground">Money management (Masaniello)</p>
