@@ -47,11 +47,11 @@ pipeline {
 
         stage('Build and push') {
             steps {
-                sh '''
-                    set -euo pipefail
-                    docker build -f "${DOCKERFILE}" -t "${IMAGE_URI}" .
-                    docker push "${IMAGE_URI}"
-                '''
+                sh '''#!/bin/bash
+set -euo pipefail
+docker build -f "${DOCKERFILE}" -t "${IMAGE_URI}" .
+docker push "${IMAGE_URI}"
+'''
             }
         }
 
@@ -60,12 +60,12 @@ pipeline {
                 expression { env.BRANCH_NAME == 'main' }
             }
             steps {
-                sh '''
-                    set -euo pipefail
-                    LATEST="${ECR_REGISTRY}/${IMAGE_REPO}:latest"
-                    docker tag "${IMAGE_URI}" "${LATEST}"
-                    docker push "${LATEST}"
-                '''
+                sh '''#!/bin/bash
+set -euo pipefail
+LATEST="${ECR_REGISTRY}/${IMAGE_REPO}:latest"
+docker tag "${IMAGE_URI}" "${LATEST}"
+docker push "${LATEST}"
+'''
             }
         }
     }

@@ -43,11 +43,21 @@ pipeline {
 
         stage('Build and push') {
             steps {
-                sh '''
-                    set -euo pipefail
-                    docker build -f "${DOCKERFILE}" -t "${IMAGE_URI}" .
-                    docker push "${IMAGE_URI}"
-                '''
+                script {
+                    def common = load 'jenkins/pipelines/_common.groovy'
+                    def cfg = common.loadDevConfig(this)
+                    env.NEXT_PUBLIC_BOT_BASE_URL = cfg.get(
+                        'NEXT_PUBLIC_BOT_BASE_URL',
+                        env.NEXT_PUBLIC_BOT_BASE_URL ?: 'https://api.testenvlab.shop'
+                    )
+                }
+                sh '''#!/bin/bash
+set -euo pipefail
+docker build -f "${DOCKERFILE}" \
+  --build-arg NEXT_PUBLIC_BOT_BASE_URL="${NEXT_PUBLIC_BOT_BASE_URL}" \
+  -t "${IMAGE_URI}" .
+docker push "${IMAGE_URI}"
+'''
             }
         }
 
@@ -56,12 +66,12 @@ pipeline {
                 expression { env.BRANCH_NAME == 'main' }
             }
             steps {
-                sh '''
-                    set -euo pipefail
-                    LATEST="${ECR_REGISTRY}/${IMAGE_REPO}:latest"
-                    docker tag "${IMAGE_URI}" "${LATEST}"
-                    docker push "${LATEST}"
-                '''
+                sh '''#!/bin/bash
+set -euo pipefail
+LATEST="${ECR_REGISTRY}/${IMAGE_REPO}:latest"
+docker tag "${IMAGE_URI}" "${LATEST}"
+docker push "${LATEST}"
+'''
             }
         }
     }
