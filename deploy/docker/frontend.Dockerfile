@@ -10,6 +10,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ ./
 
+ARG NEXT_PUBLIC_BOT_BASE_URL=http://localhost:8000
+ENV NEXT_PUBLIC_BOT_BASE_URL=${NEXT_PUBLIC_BOT_BASE_URL}
+
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate
 RUN npm run build
