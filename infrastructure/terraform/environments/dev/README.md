@@ -54,7 +54,7 @@ See `infrastructure/ansible/README.md` for Ansible install and unlock password.
 
 | Variable | Default | Notes |
 |----------|---------|--------|
-| `eks_cluster_version` | `1.29` | Match AWS supported versions in region |
+| `eks_cluster_version` | `1.31` | Match AWS supported versions in region |
 | `eks_node_instance_types` | `["t3.medium"]` | Dev node group |
 | `ecr_repository_names` | backend, workers, frontend | Image repos for CI |
 

@@ -27,6 +27,22 @@ module "acm" {
   tags           = local.common_tags
 }
 
+module "acm_app" {
+  source = "../../modules/acm"
+
+  domain_name    = var.app_domain
+  hosted_zone_id = data.aws_route53_zone.root.zone_id
+  tags           = local.common_tags
+}
+
+module "acm_api" {
+  source = "../../modules/acm"
+
+  domain_name    = var.api_domain
+  hosted_zone_id = data.aws_route53_zone.root.zone_id
+  tags           = local.common_tags
+}
+
 module "alb_target_group" {
   source = "../../modules/alb-target-group"
 
@@ -76,6 +92,23 @@ module "eks" {
   node_min_size       = var.eks_node_min_size
   node_max_size       = var.eks_node_max_size
   tags                = local.common_tags
+}
+
+module "eks_alb_controller_irsa" {
+  source = "../../modules/eks-irsa-alb-controller"
+
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  tags              = local.common_tags
+}
+
+module "eks_external_dns_irsa" {
+  source = "../../modules/eks-irsa-external-dns"
+
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  hosted_zone_id    = data.aws_route53_zone.root.zone_id
+  tags              = local.common_tags
 }
 
 module "jenkins_host" {

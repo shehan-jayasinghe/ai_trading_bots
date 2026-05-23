@@ -70,3 +70,33 @@ output "eks_oidc_provider_arn" {
 output "ecr_repository_urls" {
   value = module.ecr.repository_urls
 }
+
+output "app_url" {
+  description = "Public frontend URL (after EKS ingress + external-dns)"
+  value       = "https://${var.app_domain}"
+}
+
+output "api_url" {
+  description = "Public backend API URL (after EKS ingress + external-dns)"
+  value       = "https://${var.api_domain}"
+}
+
+output "app_acm_certificate_arn" {
+  description = "ACM certificate ARN for app_domain (Helm ingress)"
+  value       = module.acm_app.certificate_arn
+}
+
+output "api_acm_certificate_arn" {
+  description = "ACM certificate ARN for api_domain (Helm ingress)"
+  value       = module.acm_api.certificate_arn
+}
+
+output "aws_lb_controller_role_arn" {
+  description = "IRSA role ARN for aws-load-balancer-controller (Ansible eks.yml)"
+  value       = module.eks_alb_controller_irsa.iam_role_arn
+}
+
+output "external_dns_role_arn" {
+  description = "IRSA role ARN for external-dns (Ansible eks.yml)"
+  value       = module.eks_external_dns_irsa.iam_role_arn
+}

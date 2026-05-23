@@ -60,6 +60,18 @@ variable "jenkins_domain" {
   default     = "jenkins.testenvlab.shop"
 }
 
+variable "app_domain" {
+  description = "Public frontend URL host (e.g. app.testenvlab.shop)"
+  type        = string
+  default     = "app.testenvlab.shop"
+}
+
+variable "api_domain" {
+  description = "Public backend API URL host (e.g. api.testenvlab.shop)"
+  type        = string
+  default     = "api.testenvlab.shop"
+}
+
 variable "jenkins_instance_type" {
   type    = string
   default = "t3.medium"
@@ -76,9 +88,9 @@ variable "alb_name" {
 }
 
 variable "eks_cluster_version" {
-  description = "Kubernetes version for EKS control plane"
+  description = "Kubernetes version for EKS control plane (must be supported in region; upgrade one minor at a time from existing cluster)"
   type        = string
-  default     = "1.29"
+  default     = "1.31"
 }
 
 variable "eks_node_instance_types" {
