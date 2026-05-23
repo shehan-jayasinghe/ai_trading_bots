@@ -45,6 +45,29 @@ workers:
 
 frontend:
   enabled: false
+  replicaCount: 1
+  repository: deriv-frontend
+  port: 3000
+  env:
+    HOST: "0.0.0.0"
+    PORT: "3000"
+    # Override in values-dev; bake into image at build with NEXT_PUBLIC_BOT_BASE_URL
+    NEXT_PUBLIC_BOT_BASE_URL: "http://localhost:8000"
+
+ingress:
+  enabled: false
+  className: alb
+  # Comma-separated ACM ARNs (app + api), set via Ansible --set from terraform output
+  certificateArns: ""
+  hosts:
+    app: app.example.com
+    api: api.example.com
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443},{"HTTP":80}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
 
 kafkaTopics:
   enabled: true

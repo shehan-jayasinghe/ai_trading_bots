@@ -31,3 +31,14 @@ workers:
     replicaCount: 1
   executor:
     replicaCount: 1
+
+frontend:
+  enabled: true
+  env:
+    NEXT_PUBLIC_BOT_BASE_URL: "https://api.testenvlab.shop"
+
+ingress:
+  enabled: true
+  hosts:
+    app: app.testenvlab.shop
+    api: api.testenvlab.shop

@@ -62,3 +62,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "deriv-platform.kafka.bootstrap" -}}
 {{- printf "%s:9092" (include "deriv-platform.kafka.host" .) -}}
 {{- end }}
+
+{{- define "deriv-platform.postgresql.prismaUrl" -}}
+{{- $user := .Values.postgresql.auth.username -}}
+{{- $db := .Values.postgresql.auth.database -}}
+{{- $host := include "deriv-platform.postgresql.host" . -}}
+{{- printf "postgresql://%s:$(POSTGRES_PASSWORD)@%s:5432/%s" $user $host $db -}}
+{{- end }}
+
+{{- define "deriv-platform.ingress.certificateArns" -}}
+{{- .Values.ingress.certificateArns | trim -}}
+{{- end }}

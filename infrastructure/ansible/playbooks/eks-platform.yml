@@ -1,5 +1,5 @@
 ---
-# Deploy Postgres, Kafka, backend, and workers to EKS (dev).
+# Deploy Postgres, Kafka, backend, workers, and frontend (ALB ingress) to EKS (dev).
 #
 # Prerequisites:
 #   - terraform apply (EKS + ECR)

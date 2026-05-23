@@ -5,5 +5,5 @@ ansible_ssh_private_key_file: "{{ lookup('env', 'JENKINS_SSH_KEY') | default('~/
 jenkins_java_package: openjdk-21-jre-headless
 machine_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
 
-jenkins_kubectl_version: v1.29.15
+jenkins_kubectl_version: v1.31.4
 jenkins_helm_version: v3.14.4

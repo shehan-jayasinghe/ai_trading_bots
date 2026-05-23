@@ -20,3 +20,15 @@ app_secret_name: deriv-platform-app-secrets
 
 postgresql_auth_username: deriv
 postgresql_auth_database: deriv
+
+# Public app/API (ACM + ALB ingress). Fill from: cd infrastructure/terraform/environments/dev && terraform output
+ingress_enabled: true
+app_domain: app.testenvlab.shop
+api_domain: api.testenvlab.shop
+vpc_id: ""
+alb_controller_role_arn: ""
+external_dns_role_arn: ""
+app_acm_certificate_arn: ""
+api_acm_certificate_arn: ""
+external_dns_domain_filter: testenvlab.shop
+external_dns_txt_owner_id: deriv-dev

@@ -1,6 +1,6 @@
 # Deploy — Helm platform (dev)
 
-**Plan A:** umbrella chart `helm/deriv-platform` (Postgres + Kafka + backend + workers).
+**Plan A:** umbrella chart `helm/deriv-platform` (Postgres + Kafka + backend + workers + frontend + ALB ingress).
 
 | Layer | Tool |
 |-------|------|
@@ -25,7 +25,9 @@ aws ecr get-login-password --region us-west-1 | docker login --username AWS --pa
 
 docker build -f deploy/docker/backend.Dockerfile -t "$REGISTRY/deriv-backend:latest" .
 docker build -f deploy/docker/workers.Dockerfile -t "$REGISTRY/deriv-workers:latest" .
-docker build -f deploy/docker/frontend.Dockerfile -t "$REGISTRY/deriv-frontend:latest" .
+docker build -f deploy/docker/frontend.Dockerfile \
+  --build-arg NEXT_PUBLIC_BOT_BASE_URL=https://api.testenvlab.shop \
+  -t "$REGISTRY/deriv-frontend:latest" .
 docker push "$REGISTRY/deriv-backend:latest"
 docker push "$REGISTRY/deriv-workers:latest"
 docker push "$REGISTRY/deriv-frontend:latest"
@@ -44,6 +46,18 @@ cp infrastructure/ansible/inventories/dev/group_vars/eks_secrets.yml.example \
 ```
 
 Non-secret vars: `infrastructure/ansible/inventories/dev/group_vars/eks.yml`.
+
+After `terraform apply`, copy into `eks.yml` (or use `terraform output -raw`):
+
+| `eks.yml` key | Terraform output |
+|---------------|------------------|
+| `vpc_id` | `vpc_id` |
+| `alb_controller_role_arn` | `aws_lb_controller_role_arn` |
+| `external_dns_role_arn` | `external_dns_role_arn` |
+| `app_acm_certificate_arn` | `app_acm_certificate_arn` |
+| `api_acm_certificate_arn` | `api_acm_certificate_arn` |
+
+Public URLs (after Ansible deploy + DNS propagation): `app_url` → `https://app.testenvlab.shop`, `api_url` → `https://api.testenvlab.shop`.
 
 ---
 
@@ -87,7 +101,10 @@ helm upgrade --install deriv-platform deploy/helm/deriv-platform \
 ```bash
 aws eks update-kubeconfig --region us-west-1 --name deriv-ai-bot-dev
 kubectl get pods -n deriv-dev
+kubectl get ingress -n deriv-dev
 kubectl logs -n deriv-dev -l app.kubernetes.io/component=backend --tail=50
+curl -sS https://api.testenvlab.shop/hello
+curl -sS -o /dev/null -w "%{http_code}\n" https://app.testenvlab.shop/
 ```
 
 ---
@@ -108,7 +125,7 @@ deploy/
     values.yaml
     values-dev.yaml
     values-prod.yaml   # stub
-    templates/         # backend, workers, kafka topics job
+    templates/         # backend, workers, frontend, ingress, kafka topics job
 ```
 
 ---

@@ -1,0 +1,45 @@
+{{- if and .Values.ingress.enabled (include "deriv-platform.ingress.certificateArns" .) }}
+{{- $fullName := include "deriv-platform.fullname" . }}
+{{- $certArns := include "deriv-platform.ingress.certificateArns" . }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "deriv-platform.labels" . | nindent 4 }}
+  annotations:
+    {{- if $certArns }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ $certArns }}
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: {{ $val | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    {{- if and .Values.frontend.enabled .Values.ingress.hosts.app }}
+    - host: {{ .Values.ingress.hosts.app | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}-frontend
+                port:
+                  number: {{ .Values.frontend.port }}
+    {{- end }}
+    {{- if and .Values.backend.enabled .Values.ingress.hosts.api }}
+    - host: {{ .Values.ingress.hosts.api | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}-backend
+                port:
+                  number: {{ .Values.backend.port }}
+    {{- end }}
+{{- end }}

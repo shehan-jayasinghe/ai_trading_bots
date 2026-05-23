@@ -1,12 +1,29 @@
 ---
-- name: Install CI tools (Docker, AWS CLI, kubectl, Helm)
+# Ubuntu 24.04 (Noble) has no apt package "awscli" — use AWS CLI v2 installer.
+
+- name: Install Docker and unzip
   ansible.builtin.apt:
     name:
       - docker.io
-      - awscli
       - unzip
     state: present
     update_cache: true
+
+- name: Download AWS CLI v2 installer
+  ansible.builtin.get_url:
+    url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+    dest: /tmp/awscliv2.zip
+    mode: "0644"
+
+- name: Install AWS CLI v2
+  ansible.builtin.shell: |
+    set -euo pipefail
+    rm -rf /tmp/awscliv2
+    unzip -q /tmp/awscliv2.zip -d /tmp/awscliv2
+    /tmp/awscliv2/aws/install --update
+  args:
+    executable: /bin/bash
+    creates: /usr/local/bin/aws
 
 - name: Enable and start Docker
   ansible.builtin.systemd:
@@ -33,6 +50,12 @@
     dest: /tmp/helm-linux-amd64.tar.gz
     mode: "0644"
 
+- name: Ensure Helm extract directory exists
+  ansible.builtin.file:
+    path: /tmp/helm-extract
+    state: directory
+    mode: "0755"
+
 - name: Extract Helm binary
   ansible.builtin.unarchive:
     src: /tmp/helm-linux-amd64.tar.gz
@@ -48,15 +71,11 @@
     remote_src: true
 
 - name: Verify docker access for jenkins user
-  ansible.builtin.command: docker info
-  become: true
-  become_user: jenkins
+  ansible.builtin.command: runuser -u jenkins -- docker info
   changed_when: false
 
 - name: Verify AWS CLI identity (instance profile)
-  ansible.builtin.command: aws sts get-caller-identity
-  become: true
-  become_user: jenkins
+  ansible.builtin.command: runuser -u jenkins -- aws sts get-caller-identity
   changed_when: false
   failed_when: false
   register: jenkins_aws_identity

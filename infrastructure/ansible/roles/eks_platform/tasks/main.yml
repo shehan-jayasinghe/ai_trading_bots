@@ -17,6 +17,9 @@
       --name {{ eks_cluster_name }}
   changed_when: false
 
+- name: Install EKS ingress controllers (ALB + external-dns)
+  ansible.builtin.import_tasks: controllers.yml
+
 - name: Build Helm dependencies (Bitnami subcharts)
   ansible.builtin.command:
     cmd: helm dependency update
@@ -51,6 +54,12 @@
       --set namespace.name={{ helm_namespace }}
       --set secrets.existingSecret={{ app_secret_name }}
       --set postgresql.auth.existingSecret={{ app_secret_name }}
+      {% if ingress_enabled | bool %}
+      --set ingress.certificateArns={{ app_acm_certificate_arn }},{{ api_acm_certificate_arn }}
+      --set ingress.hosts.app={{ app_domain }}
+      --set ingress.hosts.api={{ api_domain }}
+      --set frontend.env.NEXT_PUBLIC_BOT_BASE_URL=https://{{ api_domain }}
+      {% endif %}
       --wait
       --timeout 20m
   register: helm_deploy
