@@ -8,6 +8,7 @@
 | `deriv-build-workers` | `jenkins/pipelines/build-workers.Jenkinsfile` |
 | `deriv-build-frontend` | `jenkins/pipelines/build-frontend.Jenkinsfile` |
 | `deriv-deploy-platform` | `jenkins/pipelines/deploy-platform.Jenkinsfile` |
+| `deriv-teardown-platform-aws` | `jenkins/pipelines/teardown-platform-aws.Jenkinsfile` |
 
 ## One-time Jenkins setup
 
@@ -59,6 +60,7 @@
 6. Repeat for `deriv-build-frontend` with `build-frontend.Jenkinsfile`
 7. **Deploy:** New Item → Pipeline → `deriv-deploy-platform` → Script Path: `jenkins/pipelines/deploy-platform.Jenkinsfile`  
    Enable **This project is parameterized** (pipeline defines `IMAGE_TAG`).
+8. **Teardown (before `terraform destroy`):** New Item → Pipeline → `deriv-teardown-platform-aws` → Script Path: `jenkins/pipelines/teardown-platform-aws.Jenkinsfile`
 
 ## Image tags
 
@@ -94,6 +96,25 @@ curl -sS https://api.testenvlab.shop/hello
 ```
 
 Optional: trigger deploy after each build with **Trigger parameterized build** passing `IMAGE_TAG` from the build job.
+
+## Teardown before `terraform destroy` (`deriv-teardown-platform-aws`)
+
+The platform **Ingress ALB** and related ENIs/EIPs are created by the **AWS Load Balancer Controller** in Kubernetes. They are **not** in Terraform state. If you run `terraform destroy` while that ALB still exists, destroy can fail (ACM “in use”, subnets/IGW dependencies).
+
+**Order when recycling dev:**
+
+1. Run **`deriv-teardown-platform-aws`** (uninstalls Helm releases when the cluster is up, then deletes `k8s-*` ALBs/target groups, waits for ELB ENIs, deletes `k8s-*` security groups left by the ALB controller, releases unattached EIPs).
+2. Run **`terraform destroy`** from `infrastructure/terraform/environments/dev` (on your Mac or another runner with Terraform state).
+
+Requires Jenkins globals: `VPC_ID`, `EKS_CLUSTER_NAME`, `AWS_REGION`. After changing Jenkins IAM in Terraform, run `terraform apply` once so the Jenkins EC2 role can call ELB/EC2 APIs.
+
+Manual equivalent:
+
+```bash
+export AWS_REGION=us-west-1 VPC_ID=<vpc-id> EKS_CLUSTER_NAME=deriv-ai-bot-dev
+bash jenkins/scripts/teardown-k8s-aws-orphans.sh
+cd infrastructure/terraform/environments/dev && terraform destroy
+```
 
 ## Later
 

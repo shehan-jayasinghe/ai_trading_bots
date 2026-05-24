@@ -119,6 +119,45 @@ resource "aws_iam_role_policy" "jenkins_secrets_manager" {
   policy = data.aws_iam_policy_document.jenkins_secrets_manager[0].json
 }
 
+# Jenkins teardown job: delete K8s ALBs / target groups and release stray EIPs before terraform destroy.
+data "aws_iam_policy_document" "jenkins_k8s_teardown" {
+  statement {
+    sid    = "ELBCleanup"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DeleteLoadBalancer",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DeleteTargetGroup",
+      "elasticloadbalancing:DescribeTargetHealth",
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeRules",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "EC2NetworkCleanup"
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeAddresses",
+      "ec2:ReleaseAddress",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DeleteSecurityGroup",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupEgress",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "jenkins_k8s_teardown" {
+  name   = "${var.name}-k8s-teardown"
+  role   = aws_iam_role.jenkins.id
+  policy = data.aws_iam_policy_document.jenkins_k8s_teardown.json
+}
+
 resource "aws_iam_instance_profile" "jenkins" {
   name = "${var.name}-profile"
   role = aws_iam_role.jenkins.name
