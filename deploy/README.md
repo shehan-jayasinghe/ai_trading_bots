@@ -10,6 +10,8 @@
 
 **Storage:** Helm `values-dev.yaml` sets `storageClass: gp2`. EKS provisions volumes via the **aws-ebs-csi-driver** add-on (Terraform). Without it, Postgres/Kafka PVCs stay `Pending`.
 
+**Bitnami images:** Chart defaults pointed at removed `docker.io/bitnami/*` tags. `values.yaml` uses `docker.io/bitnamilegacy/*` for Postgres/Kafka (legacy archive matching pinned subchart versions).
+
 Prod is stubbed (`values-prod.yaml`) — dev only for now.
 
 ---

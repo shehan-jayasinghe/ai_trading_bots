@@ -50,6 +50,14 @@ resource "aws_iam_role_policy" "jenkins_ecr" {
   policy = data.aws_iam_policy_document.jenkins_ecr.json
 }
 
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
+
+locals {
+  eks_cluster_name = element(split("/", var.eks_cluster_arn), 1)
+}
+
 data "aws_iam_policy_document" "jenkins_eks" {
   statement {
     sid    = "EKSRead"
@@ -59,10 +67,20 @@ data "aws_iam_policy_document" "jenkins_eks" {
       "eks:ListClusters",
       "eks:DescribeNodegroup",
       "eks:ListNodegroups",
+    ]
+    resources = [var.eks_cluster_arn]
+  }
+
+  statement {
+    sid    = "EKSAddonRead"
+    effect = "Allow"
+    actions = [
       "eks:DescribeAddon",
       "eks:ListAddons",
     ]
-    resources = [var.eks_cluster_arn]
+    resources = [
+      "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:addon/${local.eks_cluster_name}/*",
+    ]
   }
 
   statement {

@@ -45,34 +45,46 @@ deploy_preflight() {
 deploy_check_ebs_csi() {
   log_section "EBS CSI preflight"
   local addon_status=""
-  addon_status=$(aws eks describe-addon \
+  local describe_err=""
+
+  if addon_status=$(aws eks describe-addon \
     --cluster-name "${EKS_CLUSTER_NAME}" \
     --addon-name aws-ebs-csi-driver \
     --region "${AWS_REGION}" \
     --query addon.status \
-    --output text 2>/dev/null || echo "NOT_INSTALLED")
-
-  if [[ "${addon_status}" != "ACTIVE" ]]; then
-    log "ERROR: aws-ebs-csi-driver add-on status=${addon_status} (expected ACTIVE)"
-    log "Fix: cd infrastructure/terraform/environments/dev && terraform apply"
-    exit 1
+    --output text 2>&1); then
+    log "EKS add-on aws-ebs-csi-driver status=${addon_status}"
+  else
+    describe_err="${addon_status}"
+    addon_status=""
+    log "WARNING: aws eks describe-addon failed: ${describe_err}"
+    log "WARNING: continuing if CSI controller pods are Running (check Jenkins IAM eks:DescribeAddon on addon ARN)"
   fi
 
-  if ! kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver --no-headers 2>/dev/null \
-      | grep -qE '^ebs-csi-controller'; then
-    log "ERROR: no aws-ebs-csi-driver controller pods in kube-system"
-    kubectl get pods -n kube-system 2>/dev/null | grep -i ebs || true
-    exit 1
-  fi
-
-  if ! kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver --no-headers 2>/dev/null \
+  local csi_ok=0
+  if kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver --no-headers 2>/dev/null \
       | grep -q Running; then
-    log "ERROR: aws-ebs-csi-driver pods are not Running"
-    kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver || true
-    exit 1
+    csi_ok=1
   fi
 
-  log "EBS CSI add-on ACTIVE; controller pods Running"
+  if [[ "${addon_status}" == "ACTIVE" && "${csi_ok}" -eq 1 ]]; then
+    log "EBS CSI OK (add-on ACTIVE, controller pods Running)"
+    return 0
+  fi
+
+  if [[ "${csi_ok}" -eq 1 ]]; then
+    log "EBS CSI OK (controller pods Running; add-on API status=${addon_status:-unknown})"
+    return 0
+  fi
+
+  if [[ "${addon_status}" != "ACTIVE" && -n "${addon_status}" ]]; then
+    log "ERROR: aws-ebs-csi-driver add-on status=${addon_status} (expected ACTIVE)"
+  else
+    log "ERROR: no Running aws-ebs-csi-driver pods in kube-system"
+    kubectl get pods -n kube-system 2>/dev/null | grep -i ebs || true
+  fi
+  log "Fix: terraform apply (EBS CSI add-on) and ensure Jenkins role can DescribeAddon on addon/*"
+  exit 1
 }
 
 # Clear pending-upgrade / pending-install locks from aborted or timed-out Helm runs.

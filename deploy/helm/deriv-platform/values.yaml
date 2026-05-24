@@ -4,6 +4,9 @@ global:
   environment: dev
   # Bitnami subcharts deploy into this namespace (must match namespace.name)
   namespaceOverride: deriv-dev
+  # Public docker.io/bitnami tags were removed; use legacy archive for pinned chart versions.
+  security:
+    allowInsecureImages: true
 
 namespace:
   # Namespace is created by Ansible/Jenkins before helm upgrade --install
@@ -72,6 +75,10 @@ ingress:
 
 kafkaTopics:
   enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+    tag: 3.8.0-debian-12-r5
   topics:
     - name: workflow.scheduled
       partitions: 3
@@ -82,6 +89,10 @@ kafkaTopics:
 
 postgresql:
   enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: 16.4.0-debian-12-r14
   auth:
     username: deriv
     database: deriv
@@ -92,11 +103,23 @@ postgresql:
     persistence:
       enabled: true
       size: 8Gi
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r30
   metrics:
     enabled: false
 
 kafka:
   enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+    tag: 3.8.0-debian-12-r5
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r30
   kraft:
     enabled: true
   controller:
