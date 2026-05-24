@@ -54,6 +54,7 @@
       type: Opaque
       stringData:
         POSTGRES_PASSWORD: "{{ postgres_password }}"
+        postgres-password: "{{ postgres_password }}"
         AUTH_SECRET: "{{ auth_secret }}"
         OPENAI_API_KEY: "{{ openai_api_key | default('', true) }}"
 

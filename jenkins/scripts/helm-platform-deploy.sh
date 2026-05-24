@@ -160,9 +160,11 @@ deploy_sync_secrets() {
   done
   log "Loaded keys: POSTGRES_PASSWORD, AUTH_SECRET${OPENAI_API_KEY:+, OPENAI_API_KEY}"
 
+  # Bitnami PostgreSQL chart expects adminPasswordKey (default: postgres-password) in existingSecret.
   kubectl create secret generic "${APP_SECRET}" \
     --namespace "${HELM_NAMESPACE}" \
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+    --from-literal=postgres-password="${POSTGRES_PASSWORD}" \
     --from-literal=AUTH_SECRET="${AUTH_SECRET}" \
     --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
     --dry-run=client -o yaml | kubectl apply -f -

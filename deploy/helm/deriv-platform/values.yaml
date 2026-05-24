@@ -99,6 +99,7 @@ postgresql:
     database: deriv
     existingSecret: deriv-platform-app-secrets
     secretKeys:
+      adminPasswordKey: postgres-password
       userPasswordKey: POSTGRES_PASSWORD
   primary:
     persistence:
