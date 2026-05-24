@@ -94,6 +94,16 @@ module "eks" {
   tags                = local.common_tags
 }
 
+resource "aws_security_group_rule" "eks_api_from_jenkins" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = module.eks.cluster_security_group_id
+  source_security_group_id = module.security_groups.jenkins_ec2_security_group_id
+  description              = "EKS API from Jenkins CI host"
+}
+
 module "eks_alb_controller_irsa" {
   source = "../../modules/eks-irsa-alb-controller"
 
@@ -123,4 +133,22 @@ module "jenkins_host" {
   instance_type      = var.jenkins_instance_type
   eks_cluster_arn    = module.eks.cluster_arn
   tags               = local.common_tags
+}
+
+resource "aws_eks_access_entry" "jenkins" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = module.jenkins_host.iam_role_arn
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "jenkins_cluster_admin" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = module.jenkins_host.iam_role_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.jenkins]
 }

@@ -4,6 +4,7 @@ global:
   environment: dev
 
 namespace:
+  create: false
   name: deriv-dev
 
 # Set registry after: terraform output -json ecr_repository_urls

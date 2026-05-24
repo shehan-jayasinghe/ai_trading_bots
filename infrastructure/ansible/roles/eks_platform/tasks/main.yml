@@ -26,6 +26,15 @@
     chdir: "{{ helm_chart_path }}"
   changed_when: false
 
+- name: Ensure Helm namespace exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_namespace }}"
+
 - name: Ensure application secret exists
   kubernetes.core.k8s:
     state: present
@@ -46,16 +55,16 @@
     cmd: >-
       helm upgrade --install {{ helm_release_name }} {{ helm_chart_path }}
       --namespace {{ helm_namespace }}
-      --create-namespace
       {% for f in helm_values_files %}-f {{ helm_chart_path }}/{{ f }} {% endfor %}
       --set image.registry={{ image_registry }}
       --set image.tag={{ image_tag }}
       --set global.namespaceOverride={{ helm_namespace }}
       --set namespace.name={{ helm_namespace }}
+      --set namespace.create=false
       --set secrets.existingSecret={{ app_secret_name }}
       --set postgresql.auth.existingSecret={{ app_secret_name }}
       {% if ingress_enabled | bool %}
-      --set ingress.certificateArns={{ app_acm_certificate_arn }},{{ api_acm_certificate_arn }}
+      --set-literal ingress.certificateArns={{ app_acm_certificate_arn }},{{ api_acm_certificate_arn }}
       --set ingress.hosts.app={{ app_domain }}
       --set ingress.hosts.api={{ api_domain }}
       --set frontend.env.NEXT_PUBLIC_BOT_BASE_URL=https://{{ api_domain }}

@@ -3,6 +3,11 @@ output "iam_role_name" {
   value       = aws_iam_role.jenkins.name
 }
 
+output "iam_role_arn" {
+  description = "IAM role ARN attached to the Jenkins EC2 instance (for EKS access entries)"
+  value       = aws_iam_role.jenkins.arn
+}
+
 output "instance_id" {
   description = "Jenkins EC2 instance ID"
   value       = aws_instance.jenkins.id

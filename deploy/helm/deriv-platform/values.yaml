@@ -6,7 +6,8 @@ global:
   namespaceOverride: deriv-dev
 
 namespace:
-  create: true
+  # Namespace is created by Ansible/Jenkins before helm upgrade --install
+  create: false
   name: deriv-dev
 
 # App secret created by Ansible before helm install (see secrets.existingSecret)

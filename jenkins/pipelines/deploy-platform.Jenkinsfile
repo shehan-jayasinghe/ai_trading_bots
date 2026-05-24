@@ -66,6 +66,9 @@ aws eks update-kubeconfig --region "${AWS_REGION}" --name "${EKS_CLUSTER_NAME}"
 
 helm dependency update "${HELM_CHART}"
 
+# Idempotent: create namespace if missing; chart does not render Namespace (namespace.create=false)
+kubectl create namespace "${HELM_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
 HELM_SET_INGRESS=()
 if [[ -n "${APP_ACM_CERTIFICATE_ARN}" && -n "${API_ACM_CERTIFICATE_ARN}" ]]; then
   INGRESS_CERT_ARNS="${APP_ACM_CERTIFICATE_ARN},${API_ACM_CERTIFICATE_ARN}"
@@ -81,13 +84,13 @@ fi
 
 helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
   --namespace "${HELM_NAMESPACE}" \
-  --create-namespace \
   -f "${HELM_CHART}/values.yaml" \
   -f "${HELM_CHART}/values-dev.yaml" \
   --set "image.registry=${ECR_REGISTRY}" \
   --set "image.tag=${IMAGE_TAG}" \
   --set "global.namespaceOverride=${HELM_NAMESPACE}" \
   --set "namespace.name=${HELM_NAMESPACE}" \
+  --set "namespace.create=false" \
   --set "secrets.existingSecret=${APP_SECRET}" \
   --set "postgresql.auth.existingSecret=${APP_SECRET}" \
   "${HELM_SET_INGRESS[@]}" \
