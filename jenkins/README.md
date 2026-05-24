@@ -25,13 +25,24 @@
 
    | Name | Value |
    |------|--------|
-   | `ECR_REGISTRY` | ECR host from `terraform output ecr_repository_urls` (no `/deriv-backend` suffix) |
+   | `ECR_REGISTRY` | `terraform output -raw ecr_registry` |
    | `AWS_REGION` | `us-west-1` |
    | `EKS_CLUSTER_NAME` | `deriv-ai-bot-dev` |
    | `APP_ACM_CERTIFICATE_ARN` | `terraform output -raw app_acm_certificate_arn` |
    | `API_ACM_CERTIFICATE_ARN` | `terraform output -raw api_acm_certificate_arn` |
+   | `APP_DOMAIN` | `app.testenvlab.shop` |
+   | `API_DOMAIN` | `api.testenvlab.shop` |
+   | `PLATFORM_SECRET_ID` | `terraform output -raw platform_secret_name` |
 
-   Optional override per job: `jenkins/config/dev.env` in workspace (`jenkins/config/dev.env.example`).
+   Optional override per job: copy `jenkins/config/dev.env.example` → `jenkins/config/dev.env` (gitignored).
+
+4. **Platform secrets (once):** after `terraform apply`:
+
+   ```bash
+   cd infrastructure/terraform/environments/dev
+   terraform output -raw platform_secret_populate_command
+   # Edit CHANGE_ME values, then run the command
+   ```
 
 ## Create each Pipeline job
 
@@ -62,11 +73,11 @@ aws ecr describe-images --repository-name deriv-frontend --region us-west-1
 
 ## Deploy to EKS (`deriv-deploy-platform`)
 
-**Prerequisites:** `terraform apply`, first-time `ansible-playbook playbooks/eks-platform.yml` (creates namespace, app secret, ALB controller).
+**Prerequisites:** `terraform apply` (includes Secrets Manager secret + Jenkins IAM), populate platform secret, first-time `ansible-playbook playbooks/eks-platform.yml` (ALB controller, optional if Jenkins deploy syncs secrets).
 
 1. Build and push all images (or use the same tag for all three repos).
-2. Run **deriv-deploy-platform** with parameter **`IMAGE_TAG`** (e.g. `master-ce74e1d` from build console, or `latest`).
-3. Helm sets **one** `image.tag` for backend, workers, and frontend — all three images must exist in ECR with that tag.
+2. Run **deriv-deploy-platform** with parameter **`IMAGE_TAG`** (e.g. `master-ce74e1d` from build console, not `latest` unless pushed).
+3. Deploy reads **AWS Secrets Manager** → syncs K8s secret → Helm upgrade.
 
 Verify:
 

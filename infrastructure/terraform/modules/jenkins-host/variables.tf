@@ -45,6 +45,12 @@ variable "eks_cluster_arn" {
   type        = string
 }
 
+variable "secrets_manager_secret_arns" {
+  description = "Secrets Manager secret ARNs Jenkins may read (deploy sync to EKS)"
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Tags applied to Jenkins resources"
   type        = map(string)

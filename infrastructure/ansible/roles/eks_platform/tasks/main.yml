@@ -1,13 +1,17 @@
 ---
+- name: Load platform secrets
+  ansible.builtin.import_tasks: load-secrets.yml
+
 - name: Require EKS secrets and image registry
   ansible.builtin.assert:
     that:
-      - postgres_password | length > 0
-      - auth_secret | length > 0
+      - postgres_password | default('') | length > 0
+      - auth_secret | default('') | length > 0
       - image_registry | length > 0
     fail_msg: >-
-      Copy eks_secrets.yml.example to eks_secrets.yml; set image_registry in eks.yml
-      (terraform output ecr_repository_urls).
+      Set platform_secret_id in eks.yml and populate AWS Secrets Manager
+      (terraform output platform_secret_populate_command). Set image_registry in eks.yml
+      (terraform output ecr_registry).
 
 - name: Update kubeconfig for EKS cluster
   ansible.builtin.command:

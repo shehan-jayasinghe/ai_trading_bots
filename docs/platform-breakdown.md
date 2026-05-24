@@ -198,7 +198,7 @@ flowchart TB
 | **RDS Postgres + pgvector** | **Single** place for **trades + vectors** if you want fewer databases |
 | **DynamoDB** | Alternative to RDS for **high-volume idempotent** writes (runs/trades); pair with OpenSearch for vectors |
 | **S3** | Cheap retention of raw series and large JSON |
-| **Secrets Manager / SSM** | `DERIV_TOKEN`, DB URLs, API keys |
+| **Secrets Manager / SSM** | DB credentials, API keys (Deriv tokens per-workflow in DB) |
 | **CloudWatch** | Logs, metrics, alarms on errors and daily loss |
 
 ### 4.3 Networking and security (minimal list)

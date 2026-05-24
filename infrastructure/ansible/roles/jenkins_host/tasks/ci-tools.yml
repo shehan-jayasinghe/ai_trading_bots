@@ -1,10 +1,11 @@
 ---
 # Ubuntu 24.04 (Noble) has no apt package "awscli" — use AWS CLI v2 installer.
 
-- name: Install Docker and unzip
+- name: Install Docker, jq, and unzip
   ansible.builtin.apt:
     name:
       - docker.io
+      - jq
       - unzip
     state: present
     update_cache: true

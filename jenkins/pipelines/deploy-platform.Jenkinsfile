@@ -1,9 +1,8 @@
 // Deploy deriv-platform Helm release to EKS (backend + workers + frontend share image.tag).
 // Jenkins job: Pipeline from SCM, script path: jenkins/pipelines/deploy-platform.Jenkinsfile
 //
-// Prerequisites: terraform + ansible eks-platform.yml (cluster, secret, ingress controllers).
-// Set Jenkins globals (or jenkins/config/dev.env): ECR_REGISTRY, AWS_REGION, EKS_CLUSTER_NAME,
-// APP_ACM_CERTIFICATE_ARN, API_ACM_CERTIFICATE_ARN (for ingress).
+// Infra config: Jenkins globals or jenkins/config/dev.env (ECR, EKS, ACM, domains).
+// App secrets: AWS Secrets Manager (PLATFORM_SECRET_ID) → synced to K8s before Helm.
 
 pipeline {
     agent any
@@ -21,6 +20,7 @@ pipeline {
         HELM_RELEASE = 'deriv-platform'
         HELM_NAMESPACE = 'deriv-dev'
         APP_SECRET = 'deriv-platform-app-secrets'
+        PLATFORM_SECRET_ID = 'deriv-ai-bot/dev/platform'
     }
 
     stages {
@@ -43,16 +43,20 @@ pipeline {
                     env.API_ACM_CERTIFICATE_ARN = cfg.get('API_ACM_CERTIFICATE_ARN', env.API_ACM_CERTIFICATE_ARN ?: '')
                     env.APP_DOMAIN = cfg.get('APP_DOMAIN', env.APP_DOMAIN ?: 'app.testenvlab.shop')
                     env.API_DOMAIN = cfg.get('API_DOMAIN', env.API_DOMAIN ?: 'api.testenvlab.shop')
+                    env.PLATFORM_SECRET_ID = cfg.get('PLATFORM_SECRET_ID', env.PLATFORM_SECRET_ID ?: 'deriv-ai-bot/dev/platform')
 
                     if (!env.ECR_REGISTRY?.trim()) {
                         error('Set ECR_REGISTRY in Jenkins global env or jenkins/config/dev.env')
+                    }
+                    if (!env.PLATFORM_SECRET_ID?.trim()) {
+                        error('Set PLATFORM_SECRET_ID in Jenkins global env or jenkins/config/dev.env')
                     }
                     if (!params.IMAGE_TAG?.trim()) {
                         error('IMAGE_TAG parameter is required')
                     }
                     env.IMAGE_TAG = params.IMAGE_TAG.trim()
 
-                    echo "Deploy ${env.HELM_RELEASE} to ${env.EKS_CLUSTER_NAME} (${env.AWS_REGION}) with image.tag=${env.IMAGE_TAG}"
+                    echo "Deploy ${env.HELM_RELEASE} to ${env.EKS_CLUSTER_NAME} (${env.AWS_REGION}) tag=${env.IMAGE_TAG} secrets=${env.PLATFORM_SECRET_ID}"
                 }
             }
         }
@@ -66,32 +70,38 @@ aws eks update-kubeconfig --region "${AWS_REGION}" --name "${EKS_CLUSTER_NAME}"
 
 helm dependency update "${HELM_CHART}"
 
-# Idempotent: create namespace if missing; chart does not render Namespace (namespace.create=false)
 kubectl create namespace "${HELM_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
-# App secrets live in cluster (Ansible eks-platform.yml). Load for Bitnami Postgres upgrade + preflight.
-secret_key() {
-  kubectl get secret --namespace "${HELM_NAMESPACE}" "${APP_SECRET}" \
-    -o "jsonpath={.data.${1}}" 2>/dev/null | base64 -d
-}
+echo "Loading platform secrets from AWS Secrets Manager (${PLATFORM_SECRET_ID})..."
+APP_JSON=$(aws secretsmanager get-secret-value \
+  --region "${AWS_REGION}" \
+  --secret-id "${PLATFORM_SECRET_ID}" \
+  --query SecretString --output text)
 
-POSTGRES_PASSWORD=$(secret_key POSTGRES_PASSWORD)
-AUTH_SECRET=$(secret_key AUTH_SECRET)
-OPENAI_API_KEY=$(secret_key OPENAI_API_KEY || true)
+POSTGRES_PASSWORD=$(echo "${APP_JSON}" | jq -r '.POSTGRES_PASSWORD // empty')
+AUTH_SECRET=$(echo "${APP_JSON}" | jq -r '.AUTH_SECRET // empty')
+OPENAI_API_KEY=$(echo "${APP_JSON}" | jq -r '.OPENAI_API_KEY // empty')
 
 for required_key in POSTGRES_PASSWORD AUTH_SECRET; do
   if [[ -z "${!required_key}" ]]; then
-    echo "ERROR: ${APP_SECRET} missing or empty key ${required_key} in ${HELM_NAMESPACE}"
-    echo "Run infrastructure/ansible playbooks/eks-platform.yml first."
+    echo "ERROR: ${PLATFORM_SECRET_ID} missing required JSON key: ${required_key}"
+    echo "Populate with: terraform output -raw platform_secret_populate_command"
     exit 1
   fi
 done
 
-loaded_keys="POSTGRES_PASSWORD, AUTH_SECRET"
-if [[ -n "${OPENAI_API_KEY}" ]]; then
-  loaded_keys="${loaded_keys}, OPENAI_API_KEY"
-fi
-echo "Loaded cluster secret ${APP_SECRET} (${loaded_keys})"
+echo "Syncing K8s secret ${APP_SECRET} in ${HELM_NAMESPACE}..."
+kubectl create secret generic "${APP_SECRET}" \
+  --namespace "${HELM_NAMESPACE}" \
+  --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+  --from-literal=AUTH_SECRET="${AUTH_SECRET}" \
+  --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+HELM_PG_PASS_FILE=$(mktemp)
+chmod 600 "${HELM_PG_PASS_FILE}"
+printf '%s' "${POSTGRES_PASSWORD}" > "${HELM_PG_PASS_FILE}"
+trap 'rm -f "${HELM_PG_PASS_FILE}"' EXIT
 
 HELM_SET_INGRESS=()
 if [[ -n "${APP_ACM_CERTIFICATE_ARN}" && -n "${API_ACM_CERTIFICATE_ARN}" ]]; then
@@ -117,7 +127,7 @@ helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
   --set "namespace.create=false" \
   --set "secrets.existingSecret=${APP_SECRET}" \
   --set "postgresql.auth.existingSecret=${APP_SECRET}" \
-  --set "global.postgresql.auth.password=${POSTGRES_PASSWORD}" \
+  --set-file "global.postgresql.auth.password=${HELM_PG_PASS_FILE}" \
   "${HELM_SET_INGRESS[@]}" \
   --wait \
   --timeout 20m

@@ -37,20 +37,28 @@ Set `image_registry` in `infrastructure/ansible/inventories/dev/group_vars/eks.y
 
 ---
 
-## 2 — Secrets (not in Git)
+## 2 — Secrets (AWS Secrets Manager)
+
+**Not in Git.** Terraform creates the secret shell; you store values once:
 
 ```bash
-cp infrastructure/ansible/inventories/dev/group_vars/eks_secrets.yml.example \
-   infrastructure/ansible/inventories/dev/group_vars/eks_secrets.yml
-# Edit: postgres_password, auth_secret (match frontend AUTH_SECRET)
+cd infrastructure/terraform/environments/dev
+terraform output -raw platform_secret_populate_command
+# Replace CHANGE_ME, then run the printed aws secretsmanager put-secret-value command
 ```
 
-Non-secret vars: `infrastructure/ansible/inventories/dev/group_vars/eks.yml`.
+JSON keys: `POSTGRES_PASSWORD`, `AUTH_SECRET`, `OPENAI_API_KEY` (optional).
+
+**Jenkins deploy** reads `PLATFORM_SECRET_ID` (default `deriv-ai-bot/dev/platform`) and syncs to K8s `deriv-platform-app-secrets`.
+
+**Infra config** (not secrets): `jenkins/config/dev.env.example` or Jenkins globals — ECR, EKS, ACM ARNs, domains.
 
 After `terraform apply`, copy into `eks.yml` (or use `terraform output -raw`):
 
 | `eks.yml` key | Terraform output |
 |---------------|------------------|
+| `image_registry` | `ecr_registry` |
+| `platform_secret_id` | `platform_secret_name` |
 | `vpc_id` | `vpc_id` |
 | `alb_controller_role_arn` | `aws_lb_controller_role_arn` |
 | `external_dns_role_arn` | `external_dns_role_arn` |
@@ -136,5 +144,5 @@ deploy/
 |------|--------|
 | Defaults | `values.yaml` |
 | Dev overrides | `values-dev.yaml` |
-| Secrets | `eks_secrets.yml` → K8s Secret `deriv-platform-app-secrets` |
+| Secrets | AWS Secrets Manager → K8s `deriv-platform-app-secrets` (Jenkins deploy or Ansible) |
 | CI image tag | `--set image.tag=$GIT_SHA` or `eks.yml` `image_tag` |

@@ -124,15 +124,16 @@ module "eks_external_dns_irsa" {
 module "jenkins_host" {
   source = "../../modules/jenkins-host"
 
-  name               = "${var.project_name}-jenkins-${var.environment}"
-  vpc_id             = module.vpc.vpc_id
-  subnet_id          = module.vpc.public_subnets[0]
-  public_key         = var.public_key
-  ami_id             = var.ami_id
-  security_group_ids = [module.security_groups.jenkins_ec2_security_group_id]
-  instance_type      = var.jenkins_instance_type
-  eks_cluster_arn    = module.eks.cluster_arn
-  tags               = local.common_tags
+  name                        = "${var.project_name}-jenkins-${var.environment}"
+  vpc_id                      = module.vpc.vpc_id
+  subnet_id                   = module.vpc.public_subnets[0]
+  public_key                  = var.public_key
+  ami_id                      = var.ami_id
+  security_group_ids          = [module.security_groups.jenkins_ec2_security_group_id]
+  instance_type               = var.jenkins_instance_type
+  eks_cluster_arn             = module.eks.cluster_arn
+  secrets_manager_secret_arns = [aws_secretsmanager_secret.platform.arn]
+  tags                        = local.common_tags
 }
 
 resource "aws_eks_access_entry" "jenkins" {

@@ -75,6 +75,28 @@ resource "aws_iam_role_policy" "jenkins_eks" {
   policy = data.aws_iam_policy_document.jenkins_eks.json
 }
 
+data "aws_iam_policy_document" "jenkins_secrets_manager" {
+  count = length(var.secrets_manager_secret_arns) > 0 ? 1 : 0
+
+  statement {
+    sid    = "SecretsManagerRead"
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+    ]
+    resources = var.secrets_manager_secret_arns
+  }
+}
+
+resource "aws_iam_role_policy" "jenkins_secrets_manager" {
+  count = length(var.secrets_manager_secret_arns) > 0 ? 1 : 0
+
+  name   = "${var.name}-secrets-manager"
+  role   = aws_iam_role.jenkins.id
+  policy = data.aws_iam_policy_document.jenkins_secrets_manager[0].json
+}
+
 resource "aws_iam_instance_profile" "jenkins" {
   name = "${var.name}-profile"
   role = aws_iam_role.jenkins.name

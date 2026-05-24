@@ -2,10 +2,10 @@
 # Deploy Postgres, Kafka, backend, workers, and frontend (ALB ingress) to EKS (dev).
 #
 # Prerequisites:
-#   - terraform apply (EKS + ECR)
+#   - terraform apply (EKS + ECR + Secrets Manager platform secret)
+#   - aws secretsmanager put-secret-value (see: terraform output platform_secret_populate_command)
 #   - docker images pushed to ECR
-#   - cp inventories/dev/group_vars/eks_secrets.yml.example eks_secrets.yml
-#   - set image_registry in inventories/dev/group_vars/eks.yml
+#   - set image_registry + IRSA ARNs in inventories/dev/group_vars/eks.yml
 #
 # Usage:
 #   export AWS_PROFILE=default
@@ -18,7 +18,6 @@
 
   vars_files:
     - ../inventories/dev/group_vars/eks.yml
-    - ../inventories/dev/group_vars/eks_secrets.yml
 
   roles:
     - eks_platform

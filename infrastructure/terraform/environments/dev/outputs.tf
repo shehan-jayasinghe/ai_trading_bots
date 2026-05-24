@@ -100,3 +100,28 @@ output "external_dns_role_arn" {
   description = "IRSA role ARN for external-dns (Ansible eks.yml)"
   value       = module.eks_external_dns_irsa.iam_role_arn
 }
+
+output "ecr_registry" {
+  description = "ECR registry host (no repository suffix) for Jenkins dev.env / eks.yml"
+  value       = split("/", module.ecr.repository_urls["deriv-backend"])[0]
+}
+
+output "platform_secret_name" {
+  description = "AWS Secrets Manager secret name for platform credentials"
+  value       = aws_secretsmanager_secret.platform.name
+}
+
+output "platform_secret_arn" {
+  description = "AWS Secrets Manager secret ARN for platform credentials"
+  value       = aws_secretsmanager_secret.platform.arn
+}
+
+output "platform_secret_populate_command" {
+  description = "Run once to store platform secrets (replace placeholder values)"
+  value       = <<-EOT
+    aws secretsmanager put-secret-value \
+      --region ${var.aws_region} \
+      --secret-id ${aws_secretsmanager_secret.platform.name} \
+      --secret-string '{"POSTGRES_PASSWORD":"CHANGE_ME","AUTH_SECRET":"CHANGE_ME","OPENAI_API_KEY":""}'
+  EOT
+}
