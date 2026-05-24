@@ -51,9 +51,9 @@ docker push "${IMAGE_URI}"
             }
         }
 
-        stage('Tag latest on main') {
+        stage('Tag latest on master') {
             when {
-                expression { env.BRANCH_NAME == 'main' }
+                expression { env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }
             }
             steps {
                 sh '''#!/bin/bash

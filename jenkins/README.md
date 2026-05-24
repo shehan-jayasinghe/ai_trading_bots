@@ -48,7 +48,7 @@
 
 1. **New Item** → **Pipeline** → name `deriv-build-backend`  
 2. **Pipeline** → Definition: **Pipeline script from SCM**  
-3. SCM: your Git repo, branch `*/main` (or multibranch)  
+3. SCM: your Git repo, branch `*/master` (or multibranch)  
 4. **Script Path:** `jenkins/pipelines/build-backend.Jenkinsfile`  
 5. Repeat for `deriv-build-workers` with `build-workers.Jenkinsfile`  
 6. Repeat for `deriv-build-frontend` with `build-frontend.Jenkinsfile`
@@ -58,10 +58,10 @@
 ## Image tags
 
 ```text
-<branch-sanitized>-<git-short-sha>   e.g. main-a1b2c3d
+<branch-sanitized>-<git-short-sha>   e.g. master-a1b2c3d
 ```
 
-On branch `main`, also pushes `:latest`.
+On branch `master` (or `main`), also pushes `:latest` to ECR.
 
 ## Verify
 
@@ -76,7 +76,7 @@ aws ecr describe-images --repository-name deriv-frontend --region us-west-1
 **Prerequisites:** `terraform apply` (includes Secrets Manager secret + Jenkins IAM), populate platform secret, first-time `ansible-playbook playbooks/eks-platform.yml` (ALB controller, optional if Jenkins deploy syncs secrets).
 
 1. Build and push all images (or use the same tag for all three repos).
-2. Run **deriv-deploy-platform** with parameter **`IMAGE_TAG`** (e.g. `master-ce74e1d` from build console, not `latest` unless pushed).
+2. Run **deriv-deploy-platform** with **`IMAGE_TAG=latest`** (after builds on `master`) or a specific tag e.g. `master-a1cf7f0`.
 3. Deploy reads **AWS Secrets Manager** → syncs K8s secret → Helm upgrade.
 4. **HELM_DEBUG** (default on): Helm `--debug` streams install/wait progress to the console and `helm-deploy.log` (archived on every run). On failure/abort, diagnostics print pod/events automatically.
 
