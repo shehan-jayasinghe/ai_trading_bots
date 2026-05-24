@@ -69,6 +69,30 @@ helm dependency update "${HELM_CHART}"
 # Idempotent: create namespace if missing; chart does not render Namespace (namespace.create=false)
 kubectl create namespace "${HELM_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
+# App secrets live in cluster (Ansible eks-platform.yml). Load for Bitnami Postgres upgrade + preflight.
+secret_key() {
+  kubectl get secret --namespace "${HELM_NAMESPACE}" "${APP_SECRET}" \
+    -o "jsonpath={.data.${1}}" 2>/dev/null | base64 -d
+}
+
+POSTGRES_PASSWORD=$(secret_key POSTGRES_PASSWORD)
+AUTH_SECRET=$(secret_key AUTH_SECRET)
+OPENAI_API_KEY=$(secret_key OPENAI_API_KEY || true)
+
+for required_key in POSTGRES_PASSWORD AUTH_SECRET; do
+  if [[ -z "${!required_key}" ]]; then
+    echo "ERROR: ${APP_SECRET} missing or empty key ${required_key} in ${HELM_NAMESPACE}"
+    echo "Run infrastructure/ansible playbooks/eks-platform.yml first."
+    exit 1
+  fi
+done
+
+loaded_keys="POSTGRES_PASSWORD, AUTH_SECRET"
+if [[ -n "${OPENAI_API_KEY}" ]]; then
+  loaded_keys="${loaded_keys}, OPENAI_API_KEY"
+fi
+echo "Loaded cluster secret ${APP_SECRET} (${loaded_keys})"
+
 HELM_SET_INGRESS=()
 if [[ -n "${APP_ACM_CERTIFICATE_ARN}" && -n "${API_ACM_CERTIFICATE_ARN}" ]]; then
   INGRESS_CERT_ARNS="${APP_ACM_CERTIFICATE_ARN},${API_ACM_CERTIFICATE_ARN}"
@@ -93,6 +117,7 @@ helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
   --set "namespace.create=false" \
   --set "secrets.existingSecret=${APP_SECRET}" \
   --set "postgresql.auth.existingSecret=${APP_SECRET}" \
+  --set "global.postgresql.auth.password=${POSTGRES_PASSWORD}" \
   "${HELM_SET_INGRESS[@]}" \
   --wait \
   --timeout 20m

@@ -73,3 +73,13 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "deriv-platform.ingress.certificateArns" -}}
 {{- .Values.ingress.certificateArns | trim -}}
 {{- end }}
+
+{{/*
+  Load POSTGRES_PASSWORD, AUTH_SECRET, OPENAI_API_KEY from the app secret.
+  Must appear before env entries that reference $(POSTGRES_PASSWORD).
+*/}}
+{{- define "deriv-platform.secretEnvFrom" -}}
+envFrom:
+  - secretRef:
+      name: {{ .Values.secrets.existingSecret }}
+{{- end }}

@@ -24,12 +24,8 @@ spec:
           image: {{ include "deriv-platform.image" (dict "Values" .Values "repository" .Values.workers.repository) }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["uv", "run", "python", "-m", "planner.main"]
+          {{- include "deriv-platform.secretEnvFrom" . | nindent 10 }}
           env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.existingSecret }}
-                  key: POSTGRES_PASSWORD
             - name: POSTGRES_DATABASE_URL
               value: {{ include "deriv-platform.postgresql.url" . | quote }}
             - name: KAFKA_BOOTSTRAP
@@ -38,12 +34,6 @@ spec:
             - name: {{ $key }}
               value: {{ $val | quote }}
             {{- end }}
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.existingSecret }}
-                  key: OPENAI_API_KEY
-                  optional: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -70,12 +60,8 @@ spec:
           image: {{ include "deriv-platform.image" (dict "Values" .Values "repository" .Values.workers.repository) }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["uv", "run", "python", "-m", "executor.main"]
+          {{- include "deriv-platform.secretEnvFrom" . | nindent 10 }}
           env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.existingSecret }}
-                  key: POSTGRES_PASSWORD
             - name: POSTGRES_DATABASE_URL
               value: {{ include "deriv-platform.postgresql.url" . | quote }}
             - name: KAFKA_BOOTSTRAP
@@ -84,10 +70,4 @@ spec:
             - name: {{ $key }}
               value: {{ $val | quote }}
             {{- end }}
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.existingSecret }}
-                  key: OPENAI_API_KEY
-                  optional: true
 {{- end }}

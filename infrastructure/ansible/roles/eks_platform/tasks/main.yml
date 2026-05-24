@@ -63,6 +63,7 @@
       --set namespace.create=false
       --set secrets.existingSecret={{ app_secret_name }}
       --set postgresql.auth.existingSecret={{ app_secret_name }}
+      --set global.postgresql.auth.password={{ postgres_password }}
       {% if ingress_enabled | bool %}
       --set-literal ingress.certificateArns={{ app_acm_certificate_arn }},{{ api_acm_certificate_arn }}
       --set ingress.hosts.app={{ app_domain }}
