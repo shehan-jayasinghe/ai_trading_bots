@@ -37,8 +37,57 @@ deploy_preflight() {
     fi
   done
   if [[ "${missing}" -eq 1 ]]; then
-    log "WARNING: one or more images missing in ECR — Helm may wait until timeout (ImagePullBackOff)"
+    log "WARNING: one or more images missing in ECR (or Jenkins lacks ecr:DescribeImages)"
+    log "WARNING: deploy may still work if images exist — check pod image pull events"
   fi
+}
+
+# Clear pending-upgrade / pending-install locks from aborted or timed-out Helm runs.
+deploy_helm_unlock() {
+  log_section "Helm release lock check"
+
+  if ! helm status "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" >/dev/null 2>&1; then
+    log "No existing release — fresh install"
+    return 0
+  fi
+
+  local status
+  status=$(helm status "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" -o json | jq -r '.info.status // "unknown"')
+  log "Current status: ${status}"
+
+  if [[ "${status}" != pending-* && "${status}" != "failed" ]]; then
+    log "Release ready for upgrade"
+    return 0
+  fi
+
+  log "Clearing stuck Helm release (status=${status})..."
+
+  local last_deployed
+  last_deployed=$(helm history "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" -o json \
+    | jq -r '[.[] | select(.status == "deployed") | .revision] | last // empty')
+
+  if [[ -n "${last_deployed}" ]]; then
+    log "Rolling back to last deployed revision ${last_deployed}"
+    helm rollback "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" "${last_deployed}" --wait --timeout 5m || true
+  else
+    log "No deployed revision found; trying rollback 0"
+    helm rollback "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" 0 2>/dev/null || true
+  fi
+
+  status=$(helm status "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" -o json 2>/dev/null | jq -r '.info.status // empty' || true)
+  if [[ "${status}" == pending-* ]]; then
+    log "Still pending; deleting pending Helm release secret(s)"
+    while read -r rev; do
+      [[ -n "${rev}" ]] || continue
+      local secret_name="sh.helm.release.v1.${HELM_RELEASE}.v${rev}"
+      kubectl delete secret -n "${HELM_NAMESPACE}" "${secret_name}" --ignore-not-found=true
+      log "Deleted ${secret_name}"
+    done < <(helm history "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" -o json \
+      | jq -r '.[] | select(.status | test("pending")) | .revision')
+  fi
+
+  status=$(helm status "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" -o json 2>/dev/null | jq -r '.info.status // "none"' || echo "none")
+  log "Status after unlock: ${status}"
 }
 
 deploy_sync_secrets() {
@@ -73,6 +122,8 @@ deploy_sync_secrets() {
 }
 
 deploy_helm() {
+  deploy_helm_unlock
+
   log_section "Helm upgrade --install"
   HELM_PG_PASS_FILE=$(mktemp)
   chmod 600 "${HELM_PG_PASS_FILE}"

@@ -36,6 +36,8 @@ data "aws_iam_policy_document" "jenkins_ecr" {
       "ecr:UploadLayerPart",
       "ecr:CompleteLayerUpload",
       "ecr:DescribeRepositories",
+      "ecr:DescribeImages",
+      "ecr:ListImages",
       "ecr:CreateRepository",
     ]
     resources = ["*"]

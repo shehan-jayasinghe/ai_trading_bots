@@ -79,6 +79,7 @@ aws ecr describe-images --repository-name deriv-frontend --region us-west-1
 2. Run **deriv-deploy-platform** with **`IMAGE_TAG=latest`** (after builds on `master`) or a specific tag e.g. `master-a1cf7f0`.
 3. Deploy reads **AWS Secrets Manager** → syncs K8s secret → Helm upgrade.
 4. **HELM_DEBUG** (default on): Helm `--debug` streams install/wait progress to the console and `helm-deploy.log` (archived on every run). On failure/abort, diagnostics print pod/events automatically.
+5. **Helm lock**: each deploy runs `deploy_helm_unlock` (rollback or delete pending release secrets) before `helm upgrade` if a prior run was aborted.
 
 Verify:
 
