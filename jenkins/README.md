@@ -28,6 +28,11 @@
    | `ECR_REGISTRY` | `terraform output -raw ecr_registry` |
    | `AWS_REGION` | `us-west-1` |
    | `EKS_CLUSTER_NAME` | `deriv-ai-bot-dev` |
+   | `VPC_ID` | `terraform output -raw vpc_id` |
+   | `ALB_CONTROLLER_ROLE_ARN` | `terraform output -raw alb_controller_role_arn` |
+   | `EXTERNAL_DNS_ROLE_ARN` | `terraform output -raw external_dns_role_arn` |
+   | `EXTERNAL_DNS_DOMAIN_FILTER` | `testenvlab.shop` |
+   | `EXTERNAL_DNS_TXT_OWNER_ID` | `deriv-dev` |
    | `APP_ACM_CERTIFICATE_ARN` | `terraform output -raw app_acm_certificate_arn` |
    | `API_ACM_CERTIFICATE_ARN` | `terraform output -raw api_acm_certificate_arn` |
    | `APP_DOMAIN` | `app.testenvlab.shop` |

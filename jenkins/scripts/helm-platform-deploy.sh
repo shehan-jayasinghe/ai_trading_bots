@@ -4,6 +4,7 @@ set -euo pipefail
 
 HELM_LOG="${WORKSPACE:-/tmp}/helm-deploy.log"
 : > "${HELM_LOG}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() {
   printf '[%s] %s\n' "$(date -Is)" "$*"
@@ -227,6 +228,28 @@ deploy_wait_for_platform() {
   log "All platform pods Running"
 }
 
+deploy_wait_for_ingress() {
+  log_section "Wait for Ingress ALB address"
+  local deadline=$((SECONDS + 600))
+  local addr=""
+
+  while (( SECONDS < deadline )); do
+    addr=$(kubectl get ingress "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" \
+      -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+    if [[ -n "${addr}" ]]; then
+      log "  Ingress ADDRESS: ${addr}"
+      kubectl get ingress "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" -o wide || true
+      return 0
+    fi
+    log "  waiting for Ingress load balancer (ALB controller provisioning)..."
+    sleep 15
+  done
+
+  log "WARNING: Ingress has no hostname after 10m — check ALB controller logs"
+  kubectl describe ingress "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" 2>/dev/null | tail -30 || true
+  return 1
+}
+
 deploy_helm() {
   deploy_helm_unlock
 
@@ -286,6 +309,7 @@ deploy_helm() {
   deploy_fixup_bitnami_image_pods
   deploy_restart_data_statefulsets
   deploy_wait_for_platform
+  deploy_wait_for_ingress
 }
 
 deploy_postflight() {
@@ -306,6 +330,7 @@ main() {
 
   deploy_preflight
   deploy_check_ebs_csi
+  "${SCRIPT_DIR}/eks-ingress-controllers.sh"
   deploy_sync_secrets
   deploy_helm
   deploy_postflight

@@ -49,6 +49,11 @@ pipeline {
                     env.API_ACM_CERTIFICATE_ARN = cfg.get('API_ACM_CERTIFICATE_ARN', env.API_ACM_CERTIFICATE_ARN ?: '')
                     env.APP_DOMAIN = cfg.get('APP_DOMAIN', env.APP_DOMAIN ?: 'app.testenvlab.shop')
                     env.API_DOMAIN = cfg.get('API_DOMAIN', env.API_DOMAIN ?: 'api.testenvlab.shop')
+                    env.VPC_ID = cfg.get('VPC_ID', env.VPC_ID ?: '')
+                    env.ALB_CONTROLLER_ROLE_ARN = cfg.get('ALB_CONTROLLER_ROLE_ARN', env.ALB_CONTROLLER_ROLE_ARN ?: '')
+                    env.EXTERNAL_DNS_ROLE_ARN = cfg.get('EXTERNAL_DNS_ROLE_ARN', env.EXTERNAL_DNS_ROLE_ARN ?: '')
+                    env.EXTERNAL_DNS_DOMAIN_FILTER = cfg.get('EXTERNAL_DNS_DOMAIN_FILTER', env.EXTERNAL_DNS_DOMAIN_FILTER ?: 'testenvlab.shop')
+                    env.EXTERNAL_DNS_TXT_OWNER_ID = cfg.get('EXTERNAL_DNS_TXT_OWNER_ID', env.EXTERNAL_DNS_TXT_OWNER_ID ?: 'deriv-dev')
                     env.PLATFORM_SECRET_ID = cfg.get('PLATFORM_SECRET_ID', env.PLATFORM_SECRET_ID ?: 'deriv-ai-bot/dev/platform')
                     env.HELM_DEBUG = params.HELM_DEBUG ? 'true' : 'false'
 
@@ -61,6 +66,15 @@ pipeline {
                     if (!params.IMAGE_TAG?.trim()) {
                         error('IMAGE_TAG parameter is required')
                     }
+                    if (!env.VPC_ID?.trim()) {
+                        error('Set VPC_ID in Jenkins global env or jenkins/config/dev.env')
+                    }
+                    if (!env.ALB_CONTROLLER_ROLE_ARN?.trim()) {
+                        error('Set ALB_CONTROLLER_ROLE_ARN in Jenkins global env or jenkins/config/dev.env')
+                    }
+                    if (!env.EXTERNAL_DNS_ROLE_ARN?.trim()) {
+                        error('Set EXTERNAL_DNS_ROLE_ARN in Jenkins global env or jenkins/config/dev.env')
+                    }
                     env.IMAGE_TAG = params.IMAGE_TAG.trim()
 
                     echo "Deploy ${env.HELM_RELEASE} → ${env.EKS_CLUSTER_NAME} tag=${env.IMAGE_TAG} helm_debug=${env.HELM_DEBUG}"
@@ -70,7 +84,7 @@ pipeline {
 
         stage('Helm deploy') {
             steps {
-                sh 'chmod +x jenkins/scripts/helm-platform-deploy.sh jenkins/scripts/deploy-diagnostics.sh'
+                sh 'chmod +x jenkins/scripts/helm-platform-deploy.sh jenkins/scripts/eks-ingress-controllers.sh jenkins/scripts/deploy-diagnostics.sh'
                 sh 'jenkins/scripts/helm-platform-deploy.sh'
             }
         }
