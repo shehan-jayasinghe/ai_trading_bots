@@ -5,6 +5,7 @@ global:
   # Bitnami subcharts deploy into this namespace (must match namespace.name)
   namespaceOverride: deriv-dev
   # Public docker.io/bitnami tags were removed; use legacy archive for pinned chart versions.
+  imageRegistry: docker.io
   security:
     allowInsecureImages: true
 

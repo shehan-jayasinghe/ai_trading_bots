@@ -171,6 +171,60 @@ deploy_sync_secrets() {
   export POSTGRES_PASSWORD
 }
 
+# StatefulSet pods are not always recreated when only the image changes; delete stale pods
+# still pulling removed docker.io/bitnami/* tags before Helm waits on readiness.
+deploy_fixup_bitnami_image_pods() {
+  log_section "Bitnami image pod fixup"
+  local pod img
+  for pod in deriv-platform-postgresql-0; do
+    img=$(kubectl get pod "${pod}" -n "${HELM_NAMESPACE}" \
+      -o jsonpath='{.spec.containers[0].image}' 2>/dev/null || true)
+    if [[ -z "${img}" ]]; then
+      continue
+    fi
+    if [[ "${img}" == *"/bitnami/"* && "${img}" != *bitnamilegacy* ]]; then
+      log "  deleting ${pod} (stale image ${img})"
+      kubectl delete pod "${pod}" -n "${HELM_NAMESPACE}" --wait=false || true
+    fi
+  done
+}
+
+deploy_restart_data_statefulsets() {
+  log_section "Restart data StatefulSets"
+  for sts in deriv-platform-postgresql deriv-platform-kafka-broker deriv-platform-kafka-controller; do
+    if kubectl rollout restart "statefulset/${sts}" -n "${HELM_NAMESPACE}" 2>/dev/null; then
+      log "  restarted statefulset/${sts}"
+    fi
+  done
+}
+
+deploy_wait_for_platform() {
+  log_section "Wait for platform pods"
+  local deadline=$((SECONDS + 900))
+  local ok=0
+
+  while (( SECONDS < deadline )); do
+    local not_ready
+    not_ready=$(kubectl get pods -n "${HELM_NAMESPACE}" \
+      -l app.kubernetes.io/instance="${HELM_RELEASE}" \
+      --field-selector=status.phase!=Running,status.phase!=Succeeded \
+      --no-headers 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "${not_ready}" -eq 0 ]]; then
+      ok=1
+      break
+    fi
+    log "  ${not_ready} pod(s) not Running yet..."
+    sleep 15
+  done
+
+  kubectl get pods -n "${HELM_NAMESPACE}" -o wide || true
+  if [[ "${ok}" -ne 1 ]]; then
+    log "ERROR: platform pods not all Running within 15m"
+    return 1
+  fi
+  log "All platform pods Running"
+}
+
 deploy_helm() {
   deploy_helm_unlock
 
@@ -198,8 +252,7 @@ deploy_helm() {
     log "Helm --debug enabled (install progress in console + ${HELM_LOG})"
   fi
 
-  log "First install can take up to 20m (Postgres, Kafka, apps). Watch Helm lines below."
-  log "Log file: ${HELM_LOG}"
+  log "Helm applies manifests first; data pods restart separately (up to ~15m). Log: ${HELM_LOG}"
 
   set -o pipefail
   helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
@@ -209,19 +262,28 @@ deploy_helm() {
     --set "image.registry=${ECR_REGISTRY}" \
     --set "image.tag=${IMAGE_TAG}" \
     --set "global.namespaceOverride=${HELM_NAMESPACE}" \
+    --set "global.security.allowInsecureImages=true" \
     --set "namespace.name=${HELM_NAMESPACE}" \
     --set "namespace.create=false" \
     --set "secrets.existingSecret=${APP_SECRET}" \
     --set "postgresql.auth.existingSecret=${APP_SECRET}" \
+    --set "postgresql.image.registry=docker.io" \
+    --set "postgresql.image.repository=bitnamilegacy/postgresql" \
+    --set "postgresql.image.tag=16.4.0-debian-12-r14" \
+    --set "kafka.image.registry=docker.io" \
+    --set "kafka.image.repository=bitnamilegacy/kafka" \
+    --set "kafka.image.tag=3.8.0-debian-12-r5" \
     --set-file "global.postgresql.auth.password=${HELM_PG_PASS_FILE}" \
     "${HELM_SET_INGRESS[@]}" \
-    --wait \
-    --timeout 20m \
     "${HELM_EXTRA[@]}" \
     2>&1 | tee -a "${HELM_LOG}"
   rm -f "${HELM_PG_PASS_FILE}"
 
-  log "Helm finished successfully"
+  log "Helm apply finished"
+
+  deploy_fixup_bitnami_image_pods
+  deploy_restart_data_statefulsets
+  deploy_wait_for_platform
 }
 
 deploy_postflight() {
