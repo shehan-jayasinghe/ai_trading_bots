@@ -50,6 +50,7 @@ deploy_alb_controller() {
 
   helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
     --namespace kube-system \
+    --set replicaCount=1 \
     --set clusterName="${EKS_CLUSTER_NAME}" \
     --set region="${AWS_REGION}" \
     --set vpcId="${VPC_ID}" \

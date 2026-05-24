@@ -13,6 +13,11 @@ image:
   registry: "" # REQUIRED: set via --set image.registry=... or eks.yml
   tag: latest
 
+# Topics are defined in values.yaml; skip hook on single-node dev ("Too many pods").
+# Fresh cluster once: helm upgrade ... --set kafkaTopics.enabled=true
+kafkaTopics:
+  enabled: false
+
 postgresql:
   primary:
     persistence:
