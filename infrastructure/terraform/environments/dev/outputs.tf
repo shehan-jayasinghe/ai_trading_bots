@@ -101,6 +101,16 @@ output "external_dns_role_arn" {
   value       = module.eks_external_dns_irsa.iam_role_arn
 }
 
+output "ebs_csi_driver_role_arn" {
+  description = "IRSA role ARN for aws-ebs-csi-driver (installed via Terraform EKS add-on)"
+  value       = module.eks_ebs_csi_irsa.iam_role_arn
+}
+
+output "ebs_csi_addon_arn" {
+  description = "ARN of aws-ebs-csi-driver EKS add-on (status via aws eks describe-addon)"
+  value       = aws_eks_addon.ebs_csi.arn
+}
+
 output "ecr_registry" {
   description = "ECR registry host (no repository suffix) for Jenkins dev.env / eks.yml"
   value       = split("/", module.ecr.repository_urls["deriv-backend"])[0]

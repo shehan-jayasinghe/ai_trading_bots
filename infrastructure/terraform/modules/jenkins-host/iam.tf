@@ -59,6 +59,8 @@ data "aws_iam_policy_document" "jenkins_eks" {
       "eks:ListClusters",
       "eks:DescribeNodegroup",
       "eks:ListNodegroups",
+      "eks:DescribeAddon",
+      "eks:ListAddons",
     ]
     resources = [var.eks_cluster_arn]
   }

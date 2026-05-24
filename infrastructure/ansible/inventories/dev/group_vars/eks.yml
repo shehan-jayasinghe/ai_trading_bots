@@ -4,6 +4,9 @@
 eks_cluster_name: deriv-ai-bot-dev
 aws_region: us-west-1
 
+# Fail deploy if EBS CSI add-on is missing (installed by Terraform aws_eks_addon.ebs_csi).
+ebs_csi_verify_enabled: true
+
 helm_release_name: deriv-platform
 helm_namespace: deriv-dev
 helm_chart_path: "{{ playbook_dir }}/../../../deploy/helm/deriv-platform"

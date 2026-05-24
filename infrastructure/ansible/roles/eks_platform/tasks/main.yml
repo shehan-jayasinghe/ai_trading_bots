@@ -21,6 +21,9 @@
       --name {{ eks_cluster_name }}
   changed_when: false
 
+- name: Verify EBS CSI driver (storage preflight)
+  ansible.builtin.import_tasks: storage-preflight.yml
+
 - name: Install EKS ingress controllers (ALB + external-dns)
   ansible.builtin.import_tasks: controllers.yml
 
@@ -78,6 +81,23 @@
       --timeout 20m
   register: helm_deploy
   changed_when: "'has been upgraded' in helm_deploy.stdout or 'deployed' in helm_deploy.stdout"
+
+- name: Show platform PVCs
+  ansible.builtin.command:
+    cmd: kubectl get pvc -n {{ helm_namespace }}
+  register: platform_pvcs
+  changed_when: false
+
+- name: Fail if any platform PVC is not Bound
+  ansible.builtin.assert:
+    that:
+      - platform_pvcs.stdout is not search('Pending')
+      - platform_pvcs.stdout is not search('<unset>')
+    fail_msg: >-
+      One or more PVCs in {{ helm_namespace }} are not Bound.
+      Check: kubectl describe pvc -n {{ helm_namespace }}
+      and: kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver
+  when: platform_pvcs.stdout_lines | length > 1
 
 - name: Show platform pods
   ansible.builtin.command:

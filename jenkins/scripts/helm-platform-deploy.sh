@@ -42,6 +42,39 @@ deploy_preflight() {
   fi
 }
 
+deploy_check_ebs_csi() {
+  log_section "EBS CSI preflight"
+  local addon_status=""
+  addon_status=$(aws eks describe-addon \
+    --cluster-name "${EKS_CLUSTER_NAME}" \
+    --addon-name aws-ebs-csi-driver \
+    --region "${AWS_REGION}" \
+    --query addon.status \
+    --output text 2>/dev/null || echo "NOT_INSTALLED")
+
+  if [[ "${addon_status}" != "ACTIVE" ]]; then
+    log "ERROR: aws-ebs-csi-driver add-on status=${addon_status} (expected ACTIVE)"
+    log "Fix: cd infrastructure/terraform/environments/dev && terraform apply"
+    exit 1
+  fi
+
+  if ! kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver --no-headers 2>/dev/null \
+      | grep -qE '^ebs-csi-controller'; then
+    log "ERROR: no aws-ebs-csi-driver controller pods in kube-system"
+    kubectl get pods -n kube-system 2>/dev/null | grep -i ebs || true
+    exit 1
+  fi
+
+  if ! kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver --no-headers 2>/dev/null \
+      | grep -q Running; then
+    log "ERROR: aws-ebs-csi-driver pods are not Running"
+    kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver || true
+    exit 1
+  fi
+
+  log "EBS CSI add-on ACTIVE; controller pods Running"
+}
+
 # Clear pending-upgrade / pending-install locks from aborted or timed-out Helm runs.
 deploy_helm_unlock() {
   log_section "Helm release lock check"
@@ -57,6 +90,11 @@ deploy_helm_unlock() {
 
   if [[ "${status}" != pending-* && "${status}" != "failed" ]]; then
     log "Release ready for upgrade"
+    return 0
+  fi
+
+  if [[ "${status}" == "failed" ]]; then
+    log "Release status is failed — skipping rollback (upgrade --install will reconcile)"
     return 0
   fi
 
@@ -177,6 +215,7 @@ deploy_helm() {
 deploy_postflight() {
   log_section "Post-deploy status"
   helm status "${HELM_RELEASE}" -n "${HELM_NAMESPACE}" || true
+  kubectl get pvc -n "${HELM_NAMESPACE}" || true
   kubectl get all -n "${HELM_NAMESPACE}" -o wide || true
   kubectl get events -n "${HELM_NAMESPACE}" --sort-by='.lastTimestamp' 2>/dev/null | tail -20 || true
 
@@ -190,6 +229,7 @@ main() {
   kubectl create namespace "${HELM_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
   deploy_preflight
+  deploy_check_ebs_csi
   deploy_sync_secrets
   deploy_helm
   deploy_postflight

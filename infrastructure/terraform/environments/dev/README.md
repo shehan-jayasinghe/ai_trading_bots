@@ -11,6 +11,7 @@
 | Jenkins EC2 + IAM (ECR + EKS read) | `modules/jenkins-host` |
 | ALB + ACM + Route53 | `alb`, `acm`, `route53-record` |
 | EKS cluster + managed node group | `modules/eks` |
+| EBS CSI driver add-on + IRSA | `modules/eks-irsa-ebs-csi`, `aws_eks_addon.ebs_csi` |
 | ECR repos (`deriv-backend`, `deriv-workers`, `deriv-frontend`) | `modules/ecr` |
 
 ## Apply
@@ -32,6 +33,13 @@ terraform output -raw eks_configure_kubectl
 
 kubectl get nodes
 kubectl get pods -A
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver
+```
+
+EBS CSI (required for Helm `gp2` PVCs):
+
+```bash
+aws eks describe-addon --cluster-name deriv-ai-bot-dev --addon-name aws-ebs-csi-driver --region us-west-1 --query addon.status --output text
 ```
 
 ECR URLs:

@@ -4,9 +4,11 @@
 
 | Layer | Tool |
 |-------|------|
-| Cluster + ECR | Terraform `infrastructure/terraform/environments/dev` |
+| Cluster + ECR + **EBS CSI** | Terraform `infrastructure/terraform/environments/dev` |
 | Platform on EKS | Ansible `playbooks/eks-platform.yml` |
 | Images | Dockerfiles in `deploy/docker/` → push to ECR |
+
+**Storage:** Helm `values-dev.yaml` sets `storageClass: gp2`. EKS provisions volumes via the **aws-ebs-csi-driver** add-on (Terraform). Without it, Postgres/Kafka PVCs stay `Pending`.
 
 Prod is stubbed (`values-prod.yaml`) — dev only for now.
 
@@ -65,11 +67,26 @@ After `terraform apply`, copy into `eks.yml` (or use `terraform output -raw`):
 | `app_acm_certificate_arn` | `app_acm_certificate_arn` |
 | `api_acm_certificate_arn` | `api_acm_certificate_arn` |
 
+EBS CSI is installed by Terraform (no `eks.yml` key). Verify with `aws eks describe-addon` (see §3 below).
+
 Public URLs (after Ansible deploy + DNS propagation): `app_url` → `https://app.testenvlab.shop`, `api_url` → `https://api.testenvlab.shop`.
 
 ---
 
-## 3 — Helm dependencies (once)
+## 3 — EBS CSI (once per cluster)
+
+After `terraform apply`, confirm the add-on (also checked by Ansible / Jenkins deploy):
+
+```bash
+aws eks describe-addon --cluster-name deriv-ai-bot-dev --addon-name aws-ebs-csi-driver --region us-west-1 --query addon.status
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver
+```
+
+Expect add-on status `ACTIVE` and `ebs-csi-controller-*` **Running**.
+
+---
+
+## 4 — Helm dependencies (once)
 
 ```bash
 helm dependency update deploy/helm/deriv-platform
@@ -77,7 +94,7 @@ helm dependency update deploy/helm/deriv-platform
 
 ---
 
-## 4 — Deploy with Ansible
+## 5 — Deploy with Ansible
 
 ```bash
 cd infrastructure/ansible
@@ -104,10 +121,11 @@ helm upgrade --install deriv-platform deploy/helm/deriv-platform \
 
 ---
 
-## 5 — Verify
+## 6 — Verify
 
 ```bash
 aws eks update-kubeconfig --region us-west-1 --name deriv-ai-bot-dev
+kubectl get pvc -n deriv-dev
 kubectl get pods -n deriv-dev
 kubectl get ingress -n deriv-dev
 kubectl logs -n deriv-dev -l app.kubernetes.io/component=backend --tail=50
