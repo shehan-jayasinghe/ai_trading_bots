@@ -31,10 +31,10 @@ postgresql_auth_database: deriv
 ingress_enabled: true
 app_domain: app.testenvlab.shop
 api_domain: api.testenvlab.shop
-vpc_id: ""
-alb_controller_role_arn: ""
-external_dns_role_arn: ""
-app_acm_certificate_arn: ""
-api_acm_certificate_arn: ""
+vpc_id: vpc-0c167ee93964632d7
+alb_controller_role_arn: arn:aws:iam::891377245316:role/deriv-ai-bot-dev-aws-lb-controller
+external_dns_role_arn: arn:aws:iam::891377245316:role/deriv-ai-bot-dev-external-dns
+app_acm_certificate_arn: arn:aws:acm:us-west-1:891377245316:certificate/4eedcfe4-eb5d-4dc7-b117-5d8ba38ea839
+api_acm_certificate_arn: arn:aws:acm:us-west-1:891377245316:certificate/72d1612c-82f7-4875-947e-2ad0244dd0ac
 external_dns_domain_filter: testenvlab.shop
 external_dns_txt_owner_id: deriv-dev
