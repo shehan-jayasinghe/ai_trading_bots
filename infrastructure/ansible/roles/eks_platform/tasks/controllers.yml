@@ -51,6 +51,19 @@
   changed_when: "'has been upgraded' in alb_controller_helm.stdout or 'deployed' in alb_controller_helm.stdout"
   when: ingress_enabled | bool
 
+- name: Restart ALB controller after Helm upgrade (sync webhook TLS)
+  ansible.builtin.command:
+    cmd: kubectl rollout restart deployment/aws-load-balancer-controller -n kube-system
+  register: alb_controller_restart
+  changed_when: alb_controller_restart.rc == 0
+  when: ingress_enabled | bool
+
+- name: Wait for ALB controller rollout
+  ansible.builtin.command:
+    cmd: kubectl rollout status deployment/aws-load-balancer-controller -n kube-system --timeout=5m
+  changed_when: false
+  when: ingress_enabled | bool
+
 - name: Install external-dns
   ansible.builtin.command:
     cmd: >-

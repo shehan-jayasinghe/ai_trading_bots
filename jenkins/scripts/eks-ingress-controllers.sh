@@ -59,16 +59,24 @@ deploy_alb_controller() {
     --wait \
     --timeout 10m
 
-  local deadline=$((SECONDS + 300))
+  # Helm may rotate webhook TLS (secret + caBundle) without restarting pods; reload certs before
+  # any Service/Ingress admission (e.g. external-dns) hits the mutating webhook.
+  log "  restarting ALB controller to sync webhook TLS with caBundle"
+  kubectl rollout restart deployment/aws-load-balancer-controller -n kube-system
+  kubectl rollout status deployment/aws-load-balancer-controller -n kube-system --timeout=5m
+
+  local deadline=$((SECONDS + 120))
   while (( SECONDS < deadline )); do
-    if kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --no-headers 2>/dev/null \
-        | grep -q Running; then
+    if kubectl get endpoints aws-load-balancer-webhook-service -n kube-system \
+        -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null | grep -q .; then
+      log "  ALB webhook endpoints ready"
       log "  ALB controller OK"
       return 0
     fi
-    sleep 10
+    sleep 5
   done
-  log "ERROR: aws-load-balancer-controller not Running within 5m"
+  log "ERROR: aws-load-balancer-webhook-service has no endpoints after rollout"
+  kubectl get endpoints aws-load-balancer-webhook-service -n kube-system || true
   kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller || true
   exit 1
 }
