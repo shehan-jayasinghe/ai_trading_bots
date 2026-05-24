@@ -68,8 +68,9 @@ helm dependency update "${HELM_CHART}"
 
 HELM_SET_INGRESS=()
 if [[ -n "${APP_ACM_CERTIFICATE_ARN}" && -n "${API_ACM_CERTIFICATE_ARN}" ]]; then
+  INGRESS_CERT_ARNS="${APP_ACM_CERTIFICATE_ARN},${API_ACM_CERTIFICATE_ARN}"
   HELM_SET_INGRESS=(
-    --set "ingress.certificateArns=${APP_ACM_CERTIFICATE_ARN}\,${API_ACM_CERTIFICATE_ARN}"
+    --set-literal "ingress.certificateArns=${INGRESS_CERT_ARNS}"
     --set "ingress.hosts.app=${APP_DOMAIN}"
     --set "ingress.hosts.api=${API_DOMAIN}"
     --set "frontend.env.NEXT_PUBLIC_BOT_BASE_URL=https://${API_DOMAIN}"
