@@ -3,6 +3,7 @@
 //
 // Infra config: Jenkins globals or jenkins/config/dev.env (ECR, EKS, ACM, domains).
 // App secrets: AWS Secrets Manager (PLATFORM_SECRET_ID) → synced to K8s before Helm.
+// Install progress: Helm --debug streamed to console + workspace/helm-deploy.log
 
 pipeline {
     agent any
@@ -12,6 +13,11 @@ pipeline {
             name: 'IMAGE_TAG',
             defaultValue: 'latest',
             description: 'ECR tag applied to backend, workers, and frontend (e.g. master-abc1234)'
+        )
+        booleanParam(
+            name: 'HELM_DEBUG',
+            defaultValue: true,
+            description: 'Helm --debug during install (recommended for first deploy; shows wait progress)'
         )
     }
 
@@ -44,6 +50,7 @@ pipeline {
                     env.APP_DOMAIN = cfg.get('APP_DOMAIN', env.APP_DOMAIN ?: 'app.testenvlab.shop')
                     env.API_DOMAIN = cfg.get('API_DOMAIN', env.API_DOMAIN ?: 'api.testenvlab.shop')
                     env.PLATFORM_SECRET_ID = cfg.get('PLATFORM_SECRET_ID', env.PLATFORM_SECRET_ID ?: 'deriv-ai-bot/dev/platform')
+                    env.HELM_DEBUG = params.HELM_DEBUG ? 'true' : 'false'
 
                     if (!env.ECR_REGISTRY?.trim()) {
                         error('Set ECR_REGISTRY in Jenkins global env or jenkins/config/dev.env')
@@ -56,82 +63,15 @@ pipeline {
                     }
                     env.IMAGE_TAG = params.IMAGE_TAG.trim()
 
-                    echo "Deploy ${env.HELM_RELEASE} to ${env.EKS_CLUSTER_NAME} (${env.AWS_REGION}) tag=${env.IMAGE_TAG} secrets=${env.PLATFORM_SECRET_ID}"
+                    echo "Deploy ${env.HELM_RELEASE} → ${env.EKS_CLUSTER_NAME} tag=${env.IMAGE_TAG} helm_debug=${env.HELM_DEBUG}"
                 }
             }
         }
 
         stage('Helm deploy') {
             steps {
-                sh '''#!/bin/bash
-set -euo pipefail
-
-aws eks update-kubeconfig --region "${AWS_REGION}" --name "${EKS_CLUSTER_NAME}"
-
-helm dependency update "${HELM_CHART}"
-
-kubectl create namespace "${HELM_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-
-echo "Loading platform secrets from AWS Secrets Manager (${PLATFORM_SECRET_ID})..."
-APP_JSON=$(aws secretsmanager get-secret-value \
-  --region "${AWS_REGION}" \
-  --secret-id "${PLATFORM_SECRET_ID}" \
-  --query SecretString --output text)
-
-POSTGRES_PASSWORD=$(echo "${APP_JSON}" | jq -r '.POSTGRES_PASSWORD // empty')
-AUTH_SECRET=$(echo "${APP_JSON}" | jq -r '.AUTH_SECRET // empty')
-OPENAI_API_KEY=$(echo "${APP_JSON}" | jq -r '.OPENAI_API_KEY // empty')
-
-for required_key in POSTGRES_PASSWORD AUTH_SECRET; do
-  if [[ -z "${!required_key}" ]]; then
-    echo "ERROR: ${PLATFORM_SECRET_ID} missing required JSON key: ${required_key}"
-    echo "Populate with: terraform output -raw platform_secret_populate_command"
-    exit 1
-  fi
-done
-
-echo "Syncing K8s secret ${APP_SECRET} in ${HELM_NAMESPACE}..."
-kubectl create secret generic "${APP_SECRET}" \
-  --namespace "${HELM_NAMESPACE}" \
-  --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
-  --from-literal=AUTH_SECRET="${AUTH_SECRET}" \
-  --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-HELM_PG_PASS_FILE=$(mktemp)
-chmod 600 "${HELM_PG_PASS_FILE}"
-printf '%s' "${POSTGRES_PASSWORD}" > "${HELM_PG_PASS_FILE}"
-trap 'rm -f "${HELM_PG_PASS_FILE}"' EXIT
-
-HELM_SET_INGRESS=()
-if [[ -n "${APP_ACM_CERTIFICATE_ARN}" && -n "${API_ACM_CERTIFICATE_ARN}" ]]; then
-  INGRESS_CERT_ARNS="${APP_ACM_CERTIFICATE_ARN},${API_ACM_CERTIFICATE_ARN}"
-  HELM_SET_INGRESS=(
-    --set-literal "ingress.certificateArns=${INGRESS_CERT_ARNS}"
-    --set "ingress.hosts.app=${APP_DOMAIN}"
-    --set "ingress.hosts.api=${API_DOMAIN}"
-    --set "frontend.env.NEXT_PUBLIC_BOT_BASE_URL=https://${API_DOMAIN}"
-  )
-else
-  echo "WARNING: APP_ACM_CERTIFICATE_ARN or API_ACM_CERTIFICATE_ARN unset — ingress TLS may not be updated"
-fi
-
-helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
-  --namespace "${HELM_NAMESPACE}" \
-  -f "${HELM_CHART}/values.yaml" \
-  -f "${HELM_CHART}/values-dev.yaml" \
-  --set "image.registry=${ECR_REGISTRY}" \
-  --set "image.tag=${IMAGE_TAG}" \
-  --set "global.namespaceOverride=${HELM_NAMESPACE}" \
-  --set "namespace.name=${HELM_NAMESPACE}" \
-  --set "namespace.create=false" \
-  --set "secrets.existingSecret=${APP_SECRET}" \
-  --set "postgresql.auth.existingSecret=${APP_SECRET}" \
-  --set-file "global.postgresql.auth.password=${HELM_PG_PASS_FILE}" \
-  "${HELM_SET_INGRESS[@]}" \
-  --wait \
-  --timeout 20m
-'''
+                sh 'chmod +x jenkins/scripts/helm-platform-deploy.sh jenkins/scripts/deploy-diagnostics.sh'
+                sh 'jenkins/scripts/helm-platform-deploy.sh'
             }
         }
 
@@ -139,10 +79,9 @@ helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
             steps {
                 sh '''#!/bin/bash
 set -euo pipefail
-
-kubectl get pods -n "${HELM_NAMESPACE}"
-
+aws eks update-kubeconfig --region "${AWS_REGION}" --name "${EKS_CLUSTER_NAME}"
 for dep in "${HELM_RELEASE}-backend" "${HELM_RELEASE}-frontend" "${HELM_RELEASE}-planner" "${HELM_RELEASE}-executor"; do
+  echo "Rollout: ${dep}"
   kubectl rollout status "deployment/${dep}" -n "${HELM_NAMESPACE}" --timeout=5m
 done
 '''
@@ -151,8 +90,18 @@ done
     }
 
     post {
+        always {
+            sh 'jenkins/scripts/deploy-diagnostics.sh || true'
+            archiveArtifacts artifacts: 'helm-deploy.log', allowEmptyArchive: true, fingerprint: false
+        }
         success {
-            echo "Deployed ${env.HELM_RELEASE} to EKS namespace ${env.HELM_NAMESPACE} with tag ${env.IMAGE_TAG}"
+            echo "Deployed ${env.HELM_RELEASE} to ${env.HELM_NAMESPACE} with tag ${env.IMAGE_TAG}"
+        }
+        failure {
+            echo "Deploy failed — see console, helm-deploy.log artifact, and diagnostics above"
+        }
+        aborted {
+            echo "Deploy aborted — partial release may exist; check helm-deploy.log and diagnostics"
         }
     }
 }
