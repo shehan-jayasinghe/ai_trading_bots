@@ -31,11 +31,14 @@ deploy_ingress_preflight() {
   log "  EXTERNAL_DNS_ROLE_ARN=${EXTERNAL_DNS_ROLE_ARN}"
 }
 
-deploy_helm_repo_eks() {
+deploy_helm_repos() {
   if ! helm repo list 2>/dev/null | grep -q '^eks[[:space:]]'; then
     helm repo add eks https://aws.github.io/eks-charts 2>/dev/null || true
   fi
-  helm repo update eks 2>/dev/null || helm repo update
+  if ! helm repo list 2>/dev/null | grep -q '^external-dns[[:space:]]'; then
+    helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/ 2>/dev/null || true
+  fi
+  helm repo update eks external-dns 2>/dev/null || helm repo update
 }
 
 deploy_alb_controller() {
@@ -72,7 +75,7 @@ deploy_alb_controller() {
 
 deploy_external_dns() {
   log_section "external-dns"
-  helm upgrade --install external-dns eks/external-dns \
+  helm upgrade --install external-dns external-dns/external-dns \
     --namespace kube-system \
     --set provider.name=aws \
     --set policy=sync \
@@ -100,7 +103,7 @@ deploy_external_dns() {
 
 main() {
   deploy_ingress_preflight
-  deploy_helm_repo_eks
+  deploy_helm_repos
   deploy_alb_controller
   deploy_external_dns
 }

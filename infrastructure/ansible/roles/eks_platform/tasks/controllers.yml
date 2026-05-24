@@ -20,6 +20,14 @@
   failed_when: helm_repo_eks.rc != 0 and 'already exists' not in (helm_repo_eks.stderr | default(''))
   when: ingress_enabled | bool
 
+- name: Add external-dns Helm chart repo
+  ansible.builtin.command:
+    cmd: helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
+  register: helm_repo_external_dns
+  changed_when: "'has been added' in helm_repo_external_dns.stdout"
+  failed_when: helm_repo_external_dns.rc != 0 and 'already exists' not in (helm_repo_external_dns.stderr | default(''))
+  when: ingress_enabled | bool
+
 - name: Update Helm repos
   ansible.builtin.command:
     cmd: helm repo update
@@ -46,7 +54,7 @@
 - name: Install external-dns
   ansible.builtin.command:
     cmd: >-
-      helm upgrade --install external-dns eks/external-dns
+      helm upgrade --install external-dns external-dns/external-dns
       --namespace kube-system
       --set provider.name=aws
       --set policy=sync
