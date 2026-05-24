@@ -17,12 +17,17 @@ postgresql:
   primary:
     persistence:
       size: 8Gi
+      storageClass: gp2
 
 kafka:
   controller:
     replicaCount: 1
+    persistence:
+      storageClass: gp2
   broker:
     replicaCount: 1
+    persistence:
+      storageClass: gp2
 
 backend:
   replicaCount: 1
