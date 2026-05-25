@@ -111,8 +111,9 @@ variable "eks_node_instance_types" {
 }
 
 variable "eks_node_desired_size" {
-  type    = number
-  default = 1
+  description = "EKS managed node group desired capacity (use 2+ for platform + Grafana/Loki on dev)"
+  type        = number
+  default     = 2
 }
 
 variable "eks_node_min_size" {

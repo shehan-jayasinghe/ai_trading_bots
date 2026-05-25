@@ -78,7 +78,9 @@ See `infrastructure/ansible/README.md` for Ansible install and unlock password.
 | `enable_eks` | `true` | `false` = Jenkins + VPC + ECR only (no cluster, no Loki S3, no app/grafana ACM) |
 | `eks_cluster_version` | `1.31` | Match AWS supported versions in region |
 | `eks_node_instance_types` | `["t3.medium"]` | Dev node group |
+| `eks_node_desired_size` | `2` in `terraform.tfvars` | Platform + monitoring need ≥2 nodes (pod/IP limits on one `t3.medium`) |
 | `eks_node_min_size` | `0` | Allows **park-platform** to scale nodes to zero |
+| `eks_node_max_size` | `2` | Must be ≥ `eks_node_desired_size` |
 | `ecr_repository_names` | backend, workers, frontend | Image repos for CI |
 
 ## Region
