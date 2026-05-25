@@ -17,7 +17,7 @@ grafana:
       alb.ingress.kubernetes.io/ssl-redirect: "443"
       alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
       external-dns.alpha.kubernetes.io/hostname: grafana.testenvlab.shop
-      # certificate-arn: set via helm-monitoring-deploy.sh from GRAFANA_ACM_CERTIFICATE_ARN
+      # alb.ingress.kubernetes.io/certificate-arn: merged from helm-monitoring-deploy.sh (GRAFANA_ACM_CERTIFICATE_ARN)
 
 promtail:
   config:

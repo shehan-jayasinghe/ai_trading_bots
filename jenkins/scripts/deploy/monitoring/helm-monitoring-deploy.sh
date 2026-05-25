@@ -82,17 +82,25 @@ main() {
     log "Loki storage: filesystem PVC (set LOKI_S3_BUCKET + LOKI_ROLE_ARN for S3)"
   fi
 
+  local grafana_ingress_values=""
   if [[ -n "${GRAFANA_ACM_CERTIFICATE_ARN:-}" ]]; then
-    SET_ARGS+=(
-      --set "grafana.ingress.enabled=true"
-      --set "grafana.ingress.ingressClassName=alb"
-      --set "grafana.ingress.hosts[0]=${GRAFANA_DOMAIN}"
-      --set-literal "grafana.ingress.annotations.alb\\.ingress\\.kubernetes\\.io/certificate-arn=${GRAFANA_ACM_CERTIFICATE_ARN}"
-      --set "grafana.ingress.annotations.external-dns\\.alpha\\.kubernetes\\.io/hostname=${GRAFANA_DOMAIN}"
-    )
+    # Runtime TLS/host overrides via values file — never --set on dotted annotation keys
+    # (Helm treats dots as nesting and breaks the Grafana ingress template).
+    grafana_ingress_values=$(mktemp)
+    cat > "${grafana_ingress_values}" <<EOF
+grafana:
+  ingress:
+    enabled: true
+    hosts:
+      - ${GRAFANA_DOMAIN}
+    annotations:
+      alb.ingress.kubernetes.io/certificate-arn: ${GRAFANA_ACM_CERTIFICATE_ARN}
+      external-dns.alpha.kubernetes.io/hostname: ${GRAFANA_DOMAIN}
+EOF
+    VALUE_FILES+=(-f "${grafana_ingress_values}")
     log "Grafana Ingress: https://${GRAFANA_DOMAIN}"
   else
-    log "WARNING: GRAFANA_ACM_CERTIFICATE_ARN unset — Grafana ingress may lack TLS (run terraform apply)"
+    log "WARNING: GRAFANA_ACM_CERTIFICATE_ARN unset — Grafana ingress disabled (run terraform apply)"
     SET_ARGS+=(--set "grafana.ingress.enabled=false")
   fi
 
@@ -102,6 +110,8 @@ main() {
     "${SET_ARGS[@]}" \
     --wait \
     --timeout 15m
+
+  [[ -n "${grafana_ingress_values}" ]] && rm -f "${grafana_ingress_values}"
 
   if [[ -n "${GRAFANA_ACM_CERTIFICATE_ARN:-}" ]]; then
     log_section "Wait for Grafana Ingress"
