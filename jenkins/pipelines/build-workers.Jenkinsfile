@@ -20,12 +20,8 @@ pipeline {
             steps {
                 script {
                     def common = load 'jenkins/pipelines/_common.groovy'
-                    def cfg = common.loadDevConfig(this)
-                    env.AWS_REGION = cfg.get('AWS_REGION', env.AWS_REGION ?: 'us-west-1')
-                    env.ECR_REGISTRY = cfg.get('ECR_REGISTRY', env.ECR_REGISTRY ?: '')
-                    if (!env.ECR_REGISTRY?.trim()) {
-                        error('Set ECR_REGISTRY and AWS_REGION in Jenkins → System → Global properties → Environment variables')
-                    }
+                    env.AWS_REGION = common.envOrCfg(this, 'AWS_REGION', 'us-west-1')
+                    env.ECR_REGISTRY = common.requireEnv(this, 'ECR_REGISTRY')
                     env.IMAGE_TAG = common.imageTag(this)
                     env.IMAGE_URI = "${env.ECR_REGISTRY}/${env.IMAGE_REPO}:${env.IMAGE_TAG}"
                 }

@@ -13,7 +13,6 @@ pipeline {
     environment {
         HELM_NAMESPACE = 'deriv-dev'
         APP_SECRET = 'deriv-platform-app-secrets'
-        PLATFORM_SECRET_ID = 'deriv-ai-bot/dev/platform'
         JENKINS_INSTANCE_NAME_TAG = 'deriv-ai-bot-jenkins-dev'
     }
 
@@ -26,45 +25,41 @@ pipeline {
             steps {
                 script {
                     def common = load 'jenkins/pipelines/_common.groovy'
-                    def cfg = common.loadDevConfig(this)
 
-                    env.AWS_REGION = cfg.get('AWS_REGION', env.AWS_REGION ?: 'us-west-1')
-                    env.ECR_REGISTRY = cfg.get('ECR_REGISTRY', env.ECR_REGISTRY ?: '')
-                    env.EKS_CLUSTER_NAME = cfg.get('EKS_CLUSTER_NAME', env.EKS_CLUSTER_NAME ?: 'deriv-ai-bot-dev')
-                    env.VPC_ID = cfg.get('VPC_ID', env.VPC_ID ?: '')
-                    env.ALB_CONTROLLER_ROLE_ARN = cfg.get('ALB_CONTROLLER_ROLE_ARN', env.ALB_CONTROLLER_ROLE_ARN ?: '')
-                    env.EXTERNAL_DNS_ROLE_ARN = cfg.get('EXTERNAL_DNS_ROLE_ARN', env.EXTERNAL_DNS_ROLE_ARN ?: '')
-                    env.EXTERNAL_DNS_DOMAIN_FILTER = cfg.get('EXTERNAL_DNS_DOMAIN_FILTER', env.EXTERNAL_DNS_DOMAIN_FILTER ?: 'testenvlab.shop')
-                    env.EXTERNAL_DNS_TXT_OWNER_ID = cfg.get('EXTERNAL_DNS_TXT_OWNER_ID', env.EXTERNAL_DNS_TXT_OWNER_ID ?: 'deriv-dev')
-                    env.APP_ACM_CERTIFICATE_ARN = cfg.get('APP_ACM_CERTIFICATE_ARN', env.APP_ACM_CERTIFICATE_ARN ?: '')
-                    env.API_ACM_CERTIFICATE_ARN = cfg.get('API_ACM_CERTIFICATE_ARN', env.API_ACM_CERTIFICATE_ARN ?: '')
-                    env.APP_DOMAIN = cfg.get('APP_DOMAIN', env.APP_DOMAIN ?: 'app.testenvlab.shop')
-                    env.API_DOMAIN = cfg.get('API_DOMAIN', env.API_DOMAIN ?: 'api.testenvlab.shop')
-                    env.PLATFORM_SECRET_ID = cfg.get('PLATFORM_SECRET_ID', env.PLATFORM_SECRET_ID ?: 'deriv-ai-bot/dev/platform')
-                    env.LOKI_S3_BUCKET = cfg.get('LOKI_S3_BUCKET', env.LOKI_S3_BUCKET ?: '')
-                    env.LOKI_ROLE_ARN = cfg.get('LOKI_ROLE_ARN', env.LOKI_ROLE_ARN ?: '')
-                    env.GRAFANA_SECRET_ID = cfg.get('GRAFANA_SECRET_ID', env.GRAFANA_SECRET_ID ?: 'deriv-ai-bot/dev/grafana')
-                    env.GRAFANA_DOMAIN = cfg.get('GRAFANA_DOMAIN', env.GRAFANA_DOMAIN ?: 'grafana.testenvlab.shop')
-                    env.GRAFANA_ACM_CERTIFICATE_ARN = cfg.get('GRAFANA_ACM_CERTIFICATE_ARN', env.GRAFANA_ACM_CERTIFICATE_ARN ?: '')
-                    env.MONITORING_ENABLED = cfg.get('MONITORING_ENABLED', env.MONITORING_ENABLED ?: 'true')
-                    env.JENKINS_INSTANCE_ID = cfg.get('JENKINS_INSTANCE_ID', env.JENKINS_INSTANCE_ID ?: '')
-                    env.EKS_NODE_DESIRED_SIZE = cfg.get('EKS_NODE_DESIRED_SIZE', env.EKS_NODE_DESIRED_SIZE ?: '1')
-                    env.EKS_NODE_MAX_SIZE = cfg.get('EKS_NODE_MAX_SIZE', env.EKS_NODE_MAX_SIZE ?: '2')
+                    env.AWS_REGION = common.envOrCfg(this, 'AWS_REGION', 'us-west-1')
+                    env.ECR_REGISTRY = common.envOrCfg(this, 'ECR_REGISTRY', '')
+                    env.EKS_CLUSTER_NAME = common.envOrCfg(this, 'EKS_CLUSTER_NAME', 'deriv-ai-bot-dev')
+                    env.VPC_ID = common.envOrCfg(this, 'VPC_ID', '')
+                    env.ALB_CONTROLLER_ROLE_ARN = common.envOrCfg(this, 'ALB_CONTROLLER_ROLE_ARN', '')
+                    env.EXTERNAL_DNS_ROLE_ARN = common.envOrCfg(this, 'EXTERNAL_DNS_ROLE_ARN', '')
+                    env.EXTERNAL_DNS_DOMAIN_FILTER = common.envOrCfg(this, 'EXTERNAL_DNS_DOMAIN_FILTER', 'testenvlab.shop')
+                    env.EXTERNAL_DNS_TXT_OWNER_ID = common.envOrCfg(this, 'EXTERNAL_DNS_TXT_OWNER_ID', 'deriv-dev')
+                    env.APP_ACM_CERTIFICATE_ARN = common.envOrCfg(this, 'APP_ACM_CERTIFICATE_ARN', '')
+                    env.API_ACM_CERTIFICATE_ARN = common.envOrCfg(this, 'API_ACM_CERTIFICATE_ARN', '')
+                    env.APP_DOMAIN = common.envOrCfg(this, 'APP_DOMAIN', 'app.testenvlab.shop')
+                    env.API_DOMAIN = common.envOrCfg(this, 'API_DOMAIN', 'api.testenvlab.shop')
+                    env.PLATFORM_SECRET_ID = common.envOrCfg(this, 'PLATFORM_SECRET_ID', 'deriv-ai-bot/dev/platform')
+                    env.LOKI_S3_BUCKET = common.envOrCfg(this, 'LOKI_S3_BUCKET', '')
+                    env.LOKI_ROLE_ARN = common.envOrCfg(this, 'LOKI_ROLE_ARN', '')
+                    env.GRAFANA_SECRET_ID = common.envOrCfg(this, 'GRAFANA_SECRET_ID', 'deriv-ai-bot/dev/grafana')
+                    env.GRAFANA_DOMAIN = common.envOrCfg(this, 'GRAFANA_DOMAIN', 'grafana.testenvlab.shop')
+                    env.GRAFANA_ACM_CERTIFICATE_ARN = common.envOrCfg(this, 'GRAFANA_ACM_CERTIFICATE_ARN', '')
+                    env.MONITORING_ENABLED = common.envOrCfg(this, 'MONITORING_ENABLED', 'true')
+                    env.JENKINS_INSTANCE_ID = common.envOrCfg(this, 'JENKINS_INSTANCE_ID', '')
+                    env.EKS_NODE_DESIRED_SIZE = common.envOrCfg(this, 'EKS_NODE_DESIRED_SIZE', '1')
+                    env.EKS_NODE_MAX_SIZE = common.envOrCfg(this, 'EKS_NODE_MAX_SIZE', '2')
                     env.WAKE_START_JENKINS = params.WAKE_START_JENKINS ? 'true' : 'false'
                     env.WAKE_RUN_HELM_DEPLOY = params.WAKE_RUN_HELM_DEPLOY ? 'true' : 'false'
                     env.WAKE_IMAGE_TAG = params.IMAGE_TAG.trim()
                     env.HELM_DEBUG = 'false'
 
-                    if (!env.ECR_REGISTRY?.trim() && params.WAKE_RUN_HELM_DEPLOY) {
-                        error('Set ECR_REGISTRY for Helm deploy')
-                    }
                     if (!env.EKS_CLUSTER_NAME?.trim()) {
-                        error('Set EKS_CLUSTER_NAME')
+                        error('Set EKS_CLUSTER_NAME in Jenkins global environment variables')
                     }
                     if (params.WAKE_RUN_HELM_DEPLOY) {
-                        if (!env.VPC_ID?.trim() || !env.ALB_CONTROLLER_ROLE_ARN?.trim()) {
-                            error('Set VPC_ID and ALB_CONTROLLER_ROLE_ARN for Helm deploy')
-                        }
+                        common.requireEnv(this, 'ECR_REGISTRY')
+                        common.requireEnv(this, 'VPC_ID')
+                        common.requireEnv(this, 'ALB_CONTROLLER_ROLE_ARN')
                     }
                 }
             }

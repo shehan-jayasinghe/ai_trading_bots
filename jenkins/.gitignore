@@ -1,1 +1,2 @@
+# Local overrides only (not used by pipelines — use Jenkins global env vars)
 config/dev.env

@@ -1,4 +1,4 @@
-# Dev — set from Jenkins globals / jenkins/config/dev.env (terraform output).
+# Dev — set from Jenkins global env vars (terraform output; see jenkins/global-env.example).
 
 aws-load-balancer-controller:
   clusterName: deriv-ai-bot-dev

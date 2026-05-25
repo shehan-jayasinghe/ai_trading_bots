@@ -12,7 +12,7 @@ ami_id                = "ami-00271c85bf8a52b84"
 root_domain           = "testenvlab.shop"
 jenkins_domain        = "jenkins.testenvlab.shop"
 alb_name              = "deriv-jenkins-dev-alb"
-enable_eks          = false
+enable_eks          = true
 eks_cluster_version = "1.31"
 # REQUIRED before terraform apply:
 # public_key = "ssh-rsa AAAA... user@host"   # paste from your .pub file

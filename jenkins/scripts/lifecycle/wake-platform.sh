@@ -28,7 +28,7 @@ log_section() {
 require_env() {
   local name="$1"
   if [[ -z "${!name:-}" ]]; then
-    log "ERROR: ${name} is not set (Jenkins global env or jenkins/config/dev.env)"
+    log "ERROR: ${name} is not set (Jenkins global environment variable — see jenkins/global-env.example)"
     exit 1
   fi
 }

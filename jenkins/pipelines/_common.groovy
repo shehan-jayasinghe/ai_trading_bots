@@ -1,28 +1,23 @@
 /** Shared helpers for deriv CI pipelines (load via: def common = load 'jenkins/pipelines/_common.groovy') */
 
-def parseEnvFile(script, String path, Map cfg) {
-    if (!script.fileExists(path)) {
-        return
+/**
+ * Read config from Jenkins global environment variables (Manage Jenkins → System → Global properties).
+ * See jenkins/global-env.example for the full list.
+ */
+def envOrCfg(script, String key, String defaultVal = '') {
+    def value = script.env."${key}"
+    if (value?.trim()) {
+        return value.trim()
     }
-    script.readFile(path).split('\n').each { line ->
-        line = line.trim()
-        if (!line || line.startsWith('#')) {
-            return
-        }
-        def idx = line.indexOf('=')
-        if (idx > 0) {
-            def key = line.substring(0, idx).trim()
-            if (!cfg.containsKey(key) || cfg[key] == '') {
-                cfg[key] = line.substring(idx + 1).trim()
-            }
-        }
-    }
+    return defaultVal
 }
 
-def loadDevConfig(script) {
-    def cfg = [:]
-    parseEnvFile(script, "${script.env.WORKSPACE}/jenkins/config/dev.env", cfg)
-    return cfg
+def requireEnv(script, String key) {
+    def value = envOrCfg(script, key, '')
+    if (!value) {
+        error("Missing Jenkins global environment variable: ${key} (see jenkins/global-env.example)")
+    }
+    return value
 }
 
 def imageTag(script) {
@@ -36,7 +31,7 @@ def imageTag(script) {
 def ecrLogin(script, String region, String registry) {
     script.echo "ECR login: region=${region}, registry=${registry}"
 
-        script.sh("""#!/bin/bash
+    script.sh("""#!/bin/bash
                 set -euo pipefail
 
                 echo "AWS caller identity:"
@@ -44,7 +39,7 @@ def ecrLogin(script, String region, String registry) {
 
                 echo "Logging in to ECR (password not shown)..."
 
-                aws ecr get-login-password --region ${region} | \
+                aws ecr get-login-password --region ${region} | \\
                 docker login --username AWS --password-stdin ${registry}
                 """)
 

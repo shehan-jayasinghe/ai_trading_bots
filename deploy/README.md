@@ -39,7 +39,7 @@ docker push "$REGISTRY/deriv-workers:latest"
 docker push "$REGISTRY/deriv-frontend:latest"
 ```
 
-Set `ECR_REGISTRY` in Jenkins globals or `jenkins/config/dev.env` to `$REGISTRY`.
+Set `ECR_REGISTRY` in Jenkins global environment variables to `$REGISTRY` (see `jenkins/global-env.example`).
 
 ---
 
@@ -59,9 +59,9 @@ Grafana secret (`terraform output grafana_secret_populate_command`): `GRAFANA_AD
 
 **Jenkins deploy** reads `PLATFORM_SECRET_ID` → K8s `deriv-platform-app-secrets`; `GRAFANA_SECRET_ID` → `grafana-admin` in `monitoring`.
 
-**Infra config** (not secrets): `jenkins/config/dev.env.example` or Jenkins globals — ECR, EKS, ACM ARNs, domains.
+**Infra config** (not secrets): Jenkins global environment variables only — see `jenkins/global-env.example` for the full list (ECR, EKS, ACM ARNs, domains).
 
-After `terraform apply`, set Jenkins globals (or `jenkins/config/dev.env`) from `terraform output`:
+After `terraform apply`, set Jenkins globals from `terraform output`:
 
 | Jenkins env | Terraform output |
 |-------------|------------------|
@@ -108,7 +108,7 @@ helm dependency update deploy/helm/deriv-kafka
 ```bash
 # From repo root — same order as deriv-deploy-platform
 export AWS_REGION=us-west-1 EKS_CLUSTER_NAME=deriv-ai-bot-dev
-# ... set VPC_ID, IRSA ARNs, ECR_REGISTRY, etc. (see jenkins/config/dev.env.example)
+# ... set VPC_ID, IRSA ARNs, ECR_REGISTRY, etc. (see jenkins/global-env.example)
 
 jenkins/scripts/deploy/preflight/platform-preflight.sh
 jenkins/scripts/deploy/infrastructure/helm-eks-addons-deploy.sh

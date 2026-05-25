@@ -1,14 +1,13 @@
 // Remove Kubernetes-created ALBs, target groups, and stray EIPs before terraform destroy.
 // Jenkins job: Pipeline from SCM, script path: jenkins/pipelines/teardown-platform-aws.Jenkinsfile
 //
-// Infra config: same globals as deriv-deploy-platform (VPC_ID, EKS_CLUSTER_NAME, AWS_REGION).
+// Infra config: Jenkins global env vars (see jenkins/global-env.example)
 
 pipeline {
     agent any
 
     environment {
         HELM_RELEASES = 'deriv-ingress deriv-apps deriv-kafka deriv-postgres deriv-platform'
-        HELM_NAMESPACE = 'deriv-dev'
     }
 
     stages {
@@ -22,17 +21,16 @@ pipeline {
             steps {
                 script {
                     def common = load 'jenkins/pipelines/_common.groovy'
-                    def cfg = common.loadDevConfig(this)
 
-                    env.AWS_REGION = cfg.get('AWS_REGION', env.AWS_REGION ?: 'us-west-1')
-                    env.EKS_CLUSTER_NAME = cfg.get('EKS_CLUSTER_NAME', env.EKS_CLUSTER_NAME ?: 'deriv-ai-bot-dev')
-                    env.VPC_ID = cfg.get('VPC_ID', env.VPC_ID ?: '')
+                    env.AWS_REGION = common.envOrCfg(this, 'AWS_REGION', 'us-west-1')
+                    env.EKS_CLUSTER_NAME = common.envOrCfg(this, 'EKS_CLUSTER_NAME', 'deriv-ai-bot-dev')
+                    env.VPC_ID = common.envOrCfg(this, 'VPC_ID', '')
 
-                    if (!env.VPC_ID?.trim()) {
-                        error('Set VPC_ID in Jenkins global env or jenkins/config/dev.env')
-                    }
                     if (!env.EKS_CLUSTER_NAME?.trim()) {
-                        error('Set EKS_CLUSTER_NAME in Jenkins global env or jenkins/config/dev.env')
+                        error('Set EKS_CLUSTER_NAME in Jenkins global environment variables')
+                    }
+                    if (!env.VPC_ID?.trim()) {
+                        error('Set VPC_ID in Jenkins global environment variables')
                     }
 
                     echo "Teardown K8s AWS orphans: cluster=${env.EKS_CLUSTER_NAME} vpc=${env.VPC_ID}"

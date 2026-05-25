@@ -26,21 +26,20 @@ pipeline {
             steps {
                 script {
                     def common = load 'jenkins/pipelines/_common.groovy'
-                    def cfg = common.loadDevConfig(this)
 
-                    env.AWS_REGION = cfg.get('AWS_REGION', env.AWS_REGION ?: 'us-west-1')
-                    env.EKS_CLUSTER_NAME = cfg.get('EKS_CLUSTER_NAME', env.EKS_CLUSTER_NAME ?: 'deriv-ai-bot-dev')
-                    env.VPC_ID = cfg.get('VPC_ID', env.VPC_ID ?: '')
-                    env.JENKINS_INSTANCE_ID = cfg.get('JENKINS_INSTANCE_ID', env.JENKINS_INSTANCE_ID ?: '')
+                    env.AWS_REGION = common.envOrCfg(this, 'AWS_REGION', 'us-west-1')
+                    env.EKS_CLUSTER_NAME = common.envOrCfg(this, 'EKS_CLUSTER_NAME', 'deriv-ai-bot-dev')
+                    env.VPC_ID = common.envOrCfg(this, 'VPC_ID', '')
+                    env.JENKINS_INSTANCE_ID = common.envOrCfg(this, 'JENKINS_INSTANCE_ID', '')
                     env.PARK_STOP_JENKINS = params.PARK_STOP_JENKINS ? 'true' : 'false'
                     env.PARK_DELETE_ALB = params.PARK_DELETE_ALB ? 'true' : 'false'
                     env.PARK_SCALE_NODES_ZERO = params.PARK_SCALE_NODES_ZERO ? 'true' : 'false'
 
                     if (!env.EKS_CLUSTER_NAME?.trim()) {
-                        error('Set EKS_CLUSTER_NAME in Jenkins global env or jenkins/config/dev.env')
+                        error('Set EKS_CLUSTER_NAME in Jenkins global environment variables')
                     }
                     if (params.PARK_DELETE_ALB && !env.VPC_ID?.trim()) {
-                        error('Set VPC_ID when PARK_DELETE_ALB is enabled')
+                        error('Set VPC_ID in Jenkins global environment variables when PARK_DELETE_ALB is enabled')
                     }
                 }
             }

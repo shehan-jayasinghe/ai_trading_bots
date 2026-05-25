@@ -137,7 +137,7 @@ output "ebs_csi_addon_arn" {
 }
 
 output "ecr_registry" {
-  description = "ECR registry host (no repository suffix) for Jenkins dev.env"
+  description = "ECR registry host (no repository suffix) for Jenkins global env"
   value       = split("/", module.ecr.repository_urls["deriv-backend"])[0]
 }
 

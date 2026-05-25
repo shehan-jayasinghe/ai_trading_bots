@@ -47,7 +47,7 @@
    | `GRAFANA_DOMAIN` | `grafana.testenvlab.shop` |
    | `GRAFANA_ACM_CERTIFICATE_ARN` | `terraform output -raw grafana_acm_certificate_arn` |
 
-   Optional override per job: copy `jenkins/config/dev.env.example` → `jenkins/config/dev.env` (gitignored).
+   Full list with terraform output hints: **`jenkins/global-env.example`** (reference only — set values in Jenkins UI, not on the server).
 
 4. **Secrets (once):** after `terraform apply`:
 

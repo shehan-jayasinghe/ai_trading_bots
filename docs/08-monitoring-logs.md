@@ -30,7 +30,7 @@ terraform output -raw grafana_secret_populate_command
 # {"GRAFANA_ADMIN_USER":"admin","GRAFANA_ADMIN_PASSWORD":"YOUR_PASSWORD"}
 ```
 
-Add to Jenkins globals or `jenkins/config/dev.env`:
+Add to Jenkins global environment variables (see `jenkins/global-env.example`):
 
 ```bash
 LOKI_S3_BUCKET=<terraform output>
