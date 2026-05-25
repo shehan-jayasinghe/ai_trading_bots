@@ -18,7 +18,7 @@
 ## Wake (`deriv-wake-platform`)
 
 1. Starts Jenkins EC2 if stopped.
-2. Scales node group to **1** (configurable via `EKS_NODE_DESIRED_SIZE`).
+2. Scales node group to **5** by default (configurable via `EKS_NODE_DESIRED_SIZE` / `EKS_NODE_MAX_SIZE`; Terraform `eks_node_desired_size`).
 3. Runs full **`deriv-deploy-platform`** Helm flow (restores pods, Ingress, monitoring if enabled).
 
 ## What still costs money while parked

@@ -32,6 +32,6 @@ LOKI_S3_BUCKET                  | terraform output -raw loki_s3_bucket
 LOKI_ROLE_ARN                   | terraform output -raw loki_role_arn
 MONITORING_ENABLED              | true
 NEXT_PUBLIC_BOT_BASE_URL        | https://api.testenvlab.shop
-EKS_NODE_DESIRED_SIZE           | 1
-EKS_NODE_MAX_SIZE               | 2
+EKS_NODE_DESIRED_SIZE           | 5
+EKS_NODE_MAX_SIZE               | 5
 # JENKINS_INSTANCE_ID           | optional — else discovered by EC2 tag

@@ -14,10 +14,10 @@ jenkins_domain        = "jenkins.testenvlab.shop"
 alb_name              = "deriv-jenkins-dev-alb"
 enable_eks              = true
 eks_cluster_version     = "1.31"
-eks_node_instance_types = ["t3.medium"]
-eks_node_desired_size   = 2
+eks_node_instance_types = ["t2.medium"]
+eks_node_desired_size   = 5
 eks_node_min_size       = 0
-eks_node_max_size       = 2
+eks_node_max_size       = 5
 # REQUIRED before terraform apply:
 # public_key = "ssh-rsa AAAA... user@host"   # paste from your .pub file
 

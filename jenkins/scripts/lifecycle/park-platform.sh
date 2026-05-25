@@ -119,7 +119,7 @@ scale_eks_nodes_to_zero() {
     return 0
   fi
 
-  local max_size="${EKS_NODE_MAX_SIZE:-2}"
+  local max_size="${EKS_NODE_MAX_SIZE:-5}"
   log "  nodegroup=${ng} min=0 desired=0 max=${max_size}"
   aws eks update-nodegroup-config \
     --cluster-name "${EKS_CLUSTER_NAME}" \

@@ -107,13 +107,13 @@ variable "eks_cluster_version" {
 
 variable "eks_node_instance_types" {
   type    = list(string)
-  default = ["t3.medium"]
+  default = ["t2.medium"]
 }
 
 variable "eks_node_desired_size" {
-  description = "EKS managed node group desired capacity (use 2+ for platform + Grafana/Loki on dev)"
+  description = "EKS managed node group desired capacity (dev uses 5 for platform + monitoring pod headroom)"
   type        = number
-  default     = 2
+  default     = 5
 }
 
 variable "eks_node_min_size" {
@@ -124,7 +124,7 @@ variable "eks_node_min_size" {
 
 variable "eks_node_max_size" {
   type    = number
-  default = 2
+  default = 5
 }
 
 variable "loki_s3_lifecycle_expire_days" {

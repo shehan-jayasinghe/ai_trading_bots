@@ -46,8 +46,8 @@ pipeline {
                     env.GRAFANA_ACM_CERTIFICATE_ARN = common.envOrCfg(this, 'GRAFANA_ACM_CERTIFICATE_ARN', '')
                     env.MONITORING_ENABLED = common.envOrCfg(this, 'MONITORING_ENABLED', 'true')
                     env.JENKINS_INSTANCE_ID = common.envOrCfg(this, 'JENKINS_INSTANCE_ID', '')
-                    env.EKS_NODE_DESIRED_SIZE = common.envOrCfg(this, 'EKS_NODE_DESIRED_SIZE', '1')
-                    env.EKS_NODE_MAX_SIZE = common.envOrCfg(this, 'EKS_NODE_MAX_SIZE', '2')
+                    env.EKS_NODE_DESIRED_SIZE = common.envOrCfg(this, 'EKS_NODE_DESIRED_SIZE', '5')
+                    env.EKS_NODE_MAX_SIZE = common.envOrCfg(this, 'EKS_NODE_MAX_SIZE', '5')
                     env.WAKE_START_JENKINS = params.WAKE_START_JENKINS ? 'true' : 'false'
                     env.WAKE_RUN_HELM_DEPLOY = params.WAKE_RUN_HELM_DEPLOY ? 'true' : 'false'
                     env.WAKE_IMAGE_TAG = params.IMAGE_TAG.trim()
