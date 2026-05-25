@@ -1,0 +1,23 @@
+global:
+  environment: dev
+
+namespace:
+  name: deriv-dev
+
+image:
+  registry: ""
+  tag: latest
+
+backend:
+  replicaCount: 1
+
+workers:
+  planner:
+    replicaCount: 1
+  executor:
+    replicaCount: 1
+
+frontend:
+  enabled: true
+  env:
+    NEXT_PUBLIC_BOT_BASE_URL: "https://api.testenvlab.shop"

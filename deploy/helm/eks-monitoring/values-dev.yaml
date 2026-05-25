@@ -1,0 +1,52 @@
+# Dev — Promtail scrapes platform namespace (override platformNamespace if needed).
+
+platformNamespace: deriv-dev
+
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    hosts:
+      - grafana.testenvlab.shop
+    path: /
+    pathType: Prefix
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443},{"HTTP":80}]'
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
+      alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
+      external-dns.alpha.kubernetes.io/hostname: grafana.testenvlab.shop
+      # certificate-arn: set via helm-monitoring-deploy.sh from GRAFANA_ACM_CERTIFICATE_ARN
+
+promtail:
+  config:
+    snippets:
+      scrapeConfigs: |
+        - job_name: kubernetes-pods
+          pipeline_stages:
+            - cri: {}
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_namespace]
+              regex: deriv-dev|monitoring|kube-system
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+              target_label: component
+            - source_labels: [__meta_kubernetes_namespace]
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_container_name]
+              target_label: container
+
+loki:
+  loki:
+    storage:
+      type: filesystem
+  singleBinary:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: gp2

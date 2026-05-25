@@ -6,3 +6,9 @@ resource "aws_secretsmanager_secret" "platform" {
   description = "Platform secrets: POSTGRES_PASSWORD, AUTH_SECRET, OPENAI_API_KEY"
   tags        = local.common_tags
 }
+
+resource "aws_secretsmanager_secret" "grafana" {
+  name        = "${var.project_name}/${var.environment}/grafana"
+  description = "Grafana admin: GRAFANA_ADMIN_USER, GRAFANA_ADMIN_PASSWORD"
+  tags        = local.common_tags
+}

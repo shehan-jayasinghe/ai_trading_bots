@@ -1,0 +1,17 @@
+# Dev — set from Jenkins globals / jenkins/config/dev.env (terraform output).
+
+aws-load-balancer-controller:
+  clusterName: deriv-ai-bot-dev
+  region: us-west-1
+  vpcId: ""
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: ""
+
+external-dns:
+  txtOwnerId: deriv-dev
+  domainFilters:
+    - testenvlab.shop
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: ""

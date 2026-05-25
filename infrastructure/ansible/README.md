@@ -181,17 +181,9 @@ ansible-playbook playbooks/jenkins-host.yml -vv
 
 ---
 
-## EKS platform (Postgres, Kafka, apps)
+## EKS platform deploy
 
-After Terraform EKS apply, populate AWS Secrets Manager (`terraform output platform_secret_populate_command`), push ECR images, set `image_registry` and IRSA ARNs in `group_vars/eks.yml`:
-
-```bash
-ansible-playbook playbooks/eks-platform.yml -vv
-```
-
-Uses `platform_secret_id` in `eks.yml` (reads AWS Secrets Manager only).
-
-Full guide: `deploy/README.md`
+Use **Jenkins** (`deriv-deploy-platform`) or `jenkins/scripts/deploy/` — not Ansible. See `deploy/README.md` and `jenkins/README.md`.
 
 ## Config files
 
@@ -199,5 +191,4 @@ Full guide: `deploy/README.md`
 |------|------|
 | `ansible.cfg` | `remote_user = ubuntu` |
 | `group_vars/jenkins.yml` | SSH, Java package, kubectl/helm versions |
-| `group_vars/eks.yml` | Helm release, ECR registry, cluster name, `platform_secret_id` |
 | `aws_ec2.yml` | EC2 lookup + `ansible_host: public_ip_address` |

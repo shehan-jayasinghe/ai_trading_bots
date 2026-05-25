@@ -39,9 +39,9 @@ terraform apply   # applies eks_node_min_size=0 and Jenkins park/wake IAM
 
 ```bash
 export AWS_REGION=us-west-1 EKS_CLUSTER_NAME=deriv-ai-bot-dev VPC_ID=<vpc-id>
-bash jenkins/scripts/park-platform.sh
+bash jenkins/scripts/lifecycle/park-platform.sh
 
 # later
 export ECR_REGISTRY=... IMAGE_TAG=latest  # plus deploy env vars for wake
-bash jenkins/scripts/wake-platform.sh
+bash jenkins/scripts/lifecycle/wake-platform.sh
 ```

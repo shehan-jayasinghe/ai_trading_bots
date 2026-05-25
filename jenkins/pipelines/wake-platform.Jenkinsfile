@@ -11,8 +11,6 @@ pipeline {
     }
 
     environment {
-        HELM_CHART = 'deploy/helm/deriv-platform'
-        HELM_RELEASE = 'deriv-platform'
         HELM_NAMESPACE = 'deriv-dev'
         APP_SECRET = 'deriv-platform-app-secrets'
         PLATFORM_SECRET_ID = 'deriv-ai-bot/dev/platform'
@@ -45,6 +43,9 @@ pipeline {
                     env.PLATFORM_SECRET_ID = cfg.get('PLATFORM_SECRET_ID', env.PLATFORM_SECRET_ID ?: 'deriv-ai-bot/dev/platform')
                     env.LOKI_S3_BUCKET = cfg.get('LOKI_S3_BUCKET', env.LOKI_S3_BUCKET ?: '')
                     env.LOKI_ROLE_ARN = cfg.get('LOKI_ROLE_ARN', env.LOKI_ROLE_ARN ?: '')
+                    env.GRAFANA_SECRET_ID = cfg.get('GRAFANA_SECRET_ID', env.GRAFANA_SECRET_ID ?: 'deriv-ai-bot/dev/grafana')
+                    env.GRAFANA_DOMAIN = cfg.get('GRAFANA_DOMAIN', env.GRAFANA_DOMAIN ?: 'grafana.testenvlab.shop')
+                    env.GRAFANA_ACM_CERTIFICATE_ARN = cfg.get('GRAFANA_ACM_CERTIFICATE_ARN', env.GRAFANA_ACM_CERTIFICATE_ARN ?: '')
                     env.MONITORING_ENABLED = cfg.get('MONITORING_ENABLED', env.MONITORING_ENABLED ?: 'true')
                     env.JENKINS_INSTANCE_ID = cfg.get('JENKINS_INSTANCE_ID', env.JENKINS_INSTANCE_ID ?: '')
                     env.EKS_NODE_DESIRED_SIZE = cfg.get('EKS_NODE_DESIRED_SIZE', env.EKS_NODE_DESIRED_SIZE ?: '1')
@@ -73,11 +74,12 @@ pipeline {
             steps {
                 sh '''#!/bin/bash
 set -euo pipefail
-chmod +x jenkins/scripts/wake-platform.sh \
-  jenkins/scripts/helm-platform-deploy.sh \
-  jenkins/scripts/eks-ingress-controllers.sh \
-  jenkins/scripts/eks-monitoring.sh
-jenkins/scripts/wake-platform.sh
+chmod +x jenkins/scripts/lifecycle/wake-platform.sh \
+  jenkins/scripts/deploy/helm-platform-deploy.sh \
+  jenkins/scripts/deploy/preflight/platform-preflight.sh \
+  jenkins/scripts/deploy/infrastructure/*.sh \
+  jenkins/scripts/deploy/monitoring/helm-monitoring-deploy.sh
+jenkins/scripts/lifecycle/wake-platform.sh
 '''
             }
         }

@@ -55,10 +55,12 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
-  eks_cluster_name = element(split("/", var.eks_cluster_arn), 1)
+  eks_cluster_name = var.enable_eks ? element(split("/", var.eks_cluster_arn), 1) : ""
 }
 
 data "aws_iam_policy_document" "jenkins_eks" {
+  count = var.enable_eks ? 1 : 0
+
   statement {
     sid    = "EKSRead"
     effect = "Allow"
@@ -92,9 +94,11 @@ data "aws_iam_policy_document" "jenkins_eks" {
 }
 
 resource "aws_iam_role_policy" "jenkins_eks" {
+  count = var.enable_eks ? 1 : 0
+
   name   = "${var.name}-eks"
   role   = aws_iam_role.jenkins.id
-  policy = data.aws_iam_policy_document.jenkins_eks.json
+  policy = data.aws_iam_policy_document.jenkins_eks[0].json
 }
 
 data "aws_iam_policy_document" "jenkins_secrets_manager" {
@@ -121,6 +125,8 @@ resource "aws_iam_role_policy" "jenkins_secrets_manager" {
 
 # Jenkins teardown job: delete K8s ALBs / target groups and release stray EIPs before terraform destroy.
 data "aws_iam_policy_document" "jenkins_k8s_teardown" {
+  count = var.enable_eks ? 1 : 0
+
   statement {
     sid    = "ELBCleanup"
     effect = "Allow"
@@ -153,27 +159,15 @@ data "aws_iam_policy_document" "jenkins_k8s_teardown" {
 }
 
 resource "aws_iam_role_policy" "jenkins_k8s_teardown" {
+  count = var.enable_eks ? 1 : 0
+
   name   = "${var.name}-k8s-teardown"
   role   = aws_iam_role.jenkins.id
-  policy = data.aws_iam_policy_document.jenkins_k8s_teardown.json
+  policy = data.aws_iam_policy_document.jenkins_k8s_teardown[0].json
 }
 
-# Park/wake: scale EKS node groups, stop/start Jenkins EC2.
-data "aws_iam_policy_document" "jenkins_park_wake" {
-  statement {
-    sid    = "EKSNodegroupScale"
-    effect = "Allow"
-    actions = [
-      "eks:UpdateNodegroupConfig",
-      "eks:ListNodegroups",
-      "eks:DescribeNodegroup",
-    ]
-    resources = [
-      var.eks_cluster_arn,
-      "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:nodegroup/${local.eks_cluster_name}/*",
-    ]
-  }
-
+# Park/wake: stop/start Jenkins EC2 (always); scale EKS node groups (when enable_eks).
+data "aws_iam_policy_document" "jenkins_park_wake_ec2" {
   statement {
     sid       = "JenkinsEC2Describe"
     effect    = "Allow"
@@ -197,10 +191,36 @@ data "aws_iam_policy_document" "jenkins_park_wake" {
   }
 }
 
-resource "aws_iam_role_policy" "jenkins_park_wake" {
-  name   = "${var.name}-park-wake"
+resource "aws_iam_role_policy" "jenkins_park_wake_ec2" {
+  name   = "${var.name}-park-wake-ec2"
   role   = aws_iam_role.jenkins.id
-  policy = data.aws_iam_policy_document.jenkins_park_wake.json
+  policy = data.aws_iam_policy_document.jenkins_park_wake_ec2.json
+}
+
+data "aws_iam_policy_document" "jenkins_park_wake_eks" {
+  count = var.enable_eks ? 1 : 0
+
+  statement {
+    sid    = "EKSNodegroupScale"
+    effect = "Allow"
+    actions = [
+      "eks:UpdateNodegroupConfig",
+      "eks:ListNodegroups",
+      "eks:DescribeNodegroup",
+    ]
+    resources = [
+      var.eks_cluster_arn,
+      "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:nodegroup/${local.eks_cluster_name}/*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "jenkins_park_wake_eks" {
+  count = var.enable_eks ? 1 : 0
+
+  name   = "${var.name}-park-wake-eks"
+  role   = aws_iam_role.jenkins.id
+  policy = data.aws_iam_policy_document.jenkins_park_wake_eks[0].json
 }
 
 resource "aws_iam_instance_profile" "jenkins" {

@@ -24,9 +24,21 @@ terraform plan
 terraform apply
 ```
 
-EKS first apply can take **15–25 minutes**.
+EKS first apply can take **15–25 minutes** when `enable_eks = true`.
+
+### Jenkins-only mode (`enable_eks = false`)
+
+Set in `terraform.tfvars`:
+
+```hcl
+enable_eks = false
+```
+
+Creates VPC, Jenkins, ALB, ECR, and Secrets Manager shells — **no** EKS control plane, node group, IRSA, or platform ACM certs. Use this to save cost while setting up CI; set `enable_eks = true` and apply again when ready to deploy to Kubernetes.
 
 ## After apply — EKS
+
+Skip this section when `enable_eks = false` (`terraform output enable_eks`).
 
 ```bash
 terraform output -raw eks_configure_kubectl
@@ -63,6 +75,7 @@ See `infrastructure/ansible/README.md` for Ansible install and unlock password.
 
 | Variable | Default | Notes |
 |----------|---------|--------|
+| `enable_eks` | `true` | `false` = Jenkins + VPC + ECR only (no cluster, no Loki S3, no app/grafana ACM) |
 | `eks_cluster_version` | `1.31` | Match AWS supported versions in region |
 | `eks_node_instance_types` | `["t3.medium"]` | Dev node group |
 | `eks_node_min_size` | `0` | Allows **park-platform** to scale nodes to zero |

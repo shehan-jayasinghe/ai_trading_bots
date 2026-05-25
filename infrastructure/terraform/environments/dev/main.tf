@@ -28,6 +28,8 @@ module "acm" {
 }
 
 module "acm_app" {
+  count = var.enable_eks ? 1 : 0
+
   source = "../../modules/acm"
 
   domain_name    = var.app_domain
@@ -36,9 +38,21 @@ module "acm_app" {
 }
 
 module "acm_api" {
+  count = var.enable_eks ? 1 : 0
+
   source = "../../modules/acm"
 
   domain_name    = var.api_domain
+  hosted_zone_id = data.aws_route53_zone.root.zone_id
+  tags           = local.common_tags
+}
+
+module "acm_grafana" {
+  count = var.enable_eks ? 1 : 0
+
+  source = "../../modules/acm"
+
+  domain_name    = var.grafana_domain
   hosted_zone_id = data.aws_route53_zone.root.zone_id
   tags           = local.common_tags
 }
@@ -80,6 +94,8 @@ module "ecr" {
 }
 
 module "eks" {
+  count = var.enable_eks ? 1 : 0
+
   source = "../../modules/eks"
 
   cluster_name        = local.eks_cluster_name
@@ -95,44 +111,54 @@ module "eks" {
 }
 
 resource "aws_security_group_rule" "eks_api_from_jenkins" {
+  count = var.enable_eks ? 1 : 0
+
   type                     = "ingress"
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
-  security_group_id        = module.eks.cluster_security_group_id
+  security_group_id        = module.eks[0].cluster_security_group_id
   source_security_group_id = module.security_groups.jenkins_ec2_security_group_id
   description              = "EKS API from Jenkins CI host"
 }
 
 module "eks_alb_controller_irsa" {
+  count = var.enable_eks ? 1 : 0
+
   source = "../../modules/eks-irsa-alb-controller"
 
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
+  cluster_name      = module.eks[0].cluster_name
+  oidc_provider_arn = module.eks[0].oidc_provider_arn
   tags              = local.common_tags
 }
 
 module "eks_external_dns_irsa" {
+  count = var.enable_eks ? 1 : 0
+
   source = "../../modules/eks-irsa-external-dns"
 
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
+  cluster_name      = module.eks[0].cluster_name
+  oidc_provider_arn = module.eks[0].oidc_provider_arn
   hosted_zone_id    = data.aws_route53_zone.root.zone_id
   tags              = local.common_tags
 }
 
 module "eks_ebs_csi_irsa" {
+  count = var.enable_eks ? 1 : 0
+
   source = "../../modules/eks-irsa-ebs-csi"
 
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
+  cluster_name      = module.eks[0].cluster_name
+  oidc_provider_arn = module.eks[0].oidc_provider_arn
   tags              = local.common_tags
 }
 
 resource "aws_eks_addon" "ebs_csi" {
-  cluster_name                = module.eks.cluster_name
+  count = var.enable_eks ? 1 : 0
+
+  cluster_name                = module.eks[0].cluster_name
   addon_name                  = "aws-ebs-csi-driver"
-  service_account_role_arn    = module.eks_ebs_csi_irsa.iam_role_arn
+  service_account_role_arn    = module.eks_ebs_csi_irsa[0].iam_role_arn
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
@@ -142,26 +168,34 @@ resource "aws_eks_addon" "ebs_csi" {
 module "jenkins_host" {
   source = "../../modules/jenkins-host"
 
-  name                        = "${var.project_name}-jenkins-${var.environment}"
-  vpc_id                      = module.vpc.vpc_id
-  subnet_id                   = module.vpc.public_subnets[0]
-  public_key                  = var.public_key
-  ami_id                      = var.ami_id
-  security_group_ids          = [module.security_groups.jenkins_ec2_security_group_id]
-  instance_type               = var.jenkins_instance_type
-  eks_cluster_arn             = module.eks.cluster_arn
-  secrets_manager_secret_arns = [aws_secretsmanager_secret.platform.arn]
-  tags                        = local.common_tags
+  name              = "${var.project_name}-jenkins-${var.environment}"
+  vpc_id            = module.vpc.vpc_id
+  subnet_id         = module.vpc.public_subnets[0]
+  public_key        = var.public_key
+  ami_id            = var.ami_id
+  security_group_ids = [module.security_groups.jenkins_ec2_security_group_id]
+  instance_type     = var.jenkins_instance_type
+  enable_eks        = var.enable_eks
+  eks_cluster_arn   = var.enable_eks ? module.eks[0].cluster_arn : ""
+  secrets_manager_secret_arns = [
+    aws_secretsmanager_secret.platform.arn,
+    aws_secretsmanager_secret.grafana.arn,
+  ]
+  tags = local.common_tags
 }
 
 resource "aws_eks_access_entry" "jenkins" {
-  cluster_name  = module.eks.cluster_name
+  count = var.enable_eks ? 1 : 0
+
+  cluster_name  = module.eks[0].cluster_name
   principal_arn = module.jenkins_host.iam_role_arn
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "jenkins_cluster_admin" {
-  cluster_name  = module.eks.cluster_name
+  count = var.enable_eks ? 1 : 0
+
+  cluster_name  = module.eks[0].cluster_name
   principal_arn = module.jenkins_host.iam_role_arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 

@@ -9,7 +9,6 @@
 | `deriv-build-frontend` | `jenkins/pipelines/build-frontend.Jenkinsfile` |
 | `deriv-deploy-platform` | `jenkins/pipelines/deploy-platform.Jenkinsfile` |
 | `deriv-teardown-platform-aws` | `jenkins/pipelines/teardown-platform-aws.Jenkinsfile` |
-| `deriv-deploy-monitoring` | `jenkins/pipelines/deploy-monitoring.Jenkinsfile` |
 | `deriv-park-platform` | `jenkins/pipelines/park-platform.Jenkinsfile` |
 | `deriv-wake-platform` | `jenkins/pipelines/wake-platform.Jenkinsfile` |
 
@@ -44,15 +43,19 @@
    | `PLATFORM_SECRET_ID` | `terraform output -raw platform_secret_name` |
    | `LOKI_S3_BUCKET` | `terraform output -raw loki_s3_bucket` |
    | `LOKI_ROLE_ARN` | `terraform output -raw loki_role_arn` |
+   | `GRAFANA_SECRET_ID` | `terraform output -raw grafana_secret_name` |
+   | `GRAFANA_DOMAIN` | `grafana.testenvlab.shop` |
+   | `GRAFANA_ACM_CERTIFICATE_ARN` | `terraform output -raw grafana_acm_certificate_arn` |
 
    Optional override per job: copy `jenkins/config/dev.env.example` → `jenkins/config/dev.env` (gitignored).
 
-4. **Platform secrets (once):** after `terraform apply`:
+4. **Secrets (once):** after `terraform apply`:
 
    ```bash
    cd infrastructure/terraform/environments/dev
    terraform output -raw platform_secret_populate_command
-   # Edit CHANGE_ME values, then run the command
+   terraform output -raw grafana_secret_populate_command
+   # Edit CHANGE_ME values, then run each command
    ```
 
 ## Create each Pipeline job
@@ -64,7 +67,7 @@
 5. Repeat for `deriv-build-workers` with `build-workers.Jenkinsfile`  
 6. Repeat for `deriv-build-frontend` with `build-frontend.Jenkinsfile`
 7. **Deploy:** New Item → Pipeline → `deriv-deploy-platform` → Script Path: `jenkins/pipelines/deploy-platform.Jenkinsfile`  
-   Enable **This project is parameterized** (pipeline defines `IMAGE_TAG`).
+   Enable **This project is parameterized** (`IMAGE_TAG`, `DEPLOY_ADDONS`, `DEPLOY_MONITORING`, `HELM_DEBUG`).
 8. **Teardown (before `terraform destroy`):** New Item → Pipeline → `deriv-teardown-platform-aws` → Script Path: `jenkins/pipelines/teardown-platform-aws.Jenkinsfile`
 9. **Park / wake (save cost, keep Terraform):** `deriv-park-platform` / `deriv-wake-platform` — scale pods and nodes to **0**, drop k8s ALB, stop Jenkins EC2; wake scales nodes up and runs Helm deploy.
 
@@ -86,11 +89,18 @@ aws ecr describe-images --repository-name deriv-frontend --region us-west-1
 
 ## Deploy to EKS (`deriv-deploy-platform`)
 
-**Prerequisites:** `terraform apply` (includes Secrets Manager secret + Jenkins IAM), populate platform secret, first-time `ansible-playbook playbooks/eks-platform.yml` (ALB controller, optional if Jenkins deploy syncs secrets).
+**Prerequisites:** `terraform apply`, populate platform secret, Jenkins globals (see table above).
+
+**Pipeline stages** (one job `deriv-deploy-platform`):
+
+1. `deploy/preflight/platform-preflight.sh` — kubeconfig, EBS CSI, ECR tags  
+2. `deploy/infrastructure/helm-eks-addons-deploy.sh` — chart `deploy/helm/eks-cluster-addons`  
+3. `deploy/helm-platform-deploy.sh` — `deriv-postgres` → `deriv-kafka` → `deriv-apps` → `deriv-ingress`  
+4. `deploy/monitoring/helm-monitoring-deploy.sh` — chart `deploy/helm/eks-monitoring` (optional)
 
 1. Build and push all images (or use the same tag for all three repos).
 2. Run **deriv-deploy-platform** with **`IMAGE_TAG=latest`** (after builds on `master`) or a specific tag e.g. `master-a1cf7f0`.
-3. Deploy reads **AWS Secrets Manager** → syncs K8s secret → Helm upgrade.
+3. Deploy syncs **AWS Secrets Manager** → K8s secret inside `helm-platform-deploy.sh`.
 4. **HELM_DEBUG** (default on): Helm `--debug` streams install/wait progress to the console and `helm-deploy.log` (archived on every run). On failure/abort, diagnostics print pod/events automatically.
 5. **Helm lock**: each deploy runs `deploy_helm_unlock` (rollback or delete pending release secrets) before `helm upgrade` if a prior run was aborted.
 
@@ -103,9 +113,9 @@ curl -sS https://api.testenvlab.shop/hello
 
 Optional: trigger deploy after each build with **Trigger parameterized build** passing `IMAGE_TAG` from the build job.
 
-## Logs in Grafana (`deriv-deploy-monitoring` or platform deploy)
+## Logs in Grafana (platform deploy)
 
-Platform deploy installs **Loki + Promtail + Grafana** when `MONITORING_ENABLED=true` (default). Requires `terraform apply` for S3 + Loki IRSA, then set `LOKI_S3_BUCKET` and `LOKI_ROLE_ARN` in Jenkins globals.
+Platform deploy installs **eks-monitoring** chart when `DEPLOY_MONITORING=true` (default). Set `LOKI_S3_BUCKET` and `LOKI_ROLE_ARN` from Terraform outputs.
 
 See [docs/08-monitoring-logs.md](../docs/08-monitoring-logs.md) for port-forward, LogQL, and admin password.
 
@@ -116,13 +126,13 @@ Use when you are not using the lab for a while but want to keep Terraform state 
 | Job | What it does |
 |-----|----------------|
 | **`deriv-park-platform`** | Scale all `deriv-dev` + `monitoring` Deployments/StatefulSets to **0**, delete Ingress (k8s ALB), scale EKS node group to **0**, optionally **stop** Jenkins EC2 |
-| **`deriv-wake-platform`** | **Start** Jenkins, scale nodes to `EKS_NODE_DESIRED_SIZE` (default 1), run **`helm-platform-deploy.sh`** (parameter `IMAGE_TAG`, default `latest`) |
+| **`deriv-wake-platform`** | **Start** Jenkins, scale nodes up, run preflight + addons + platform + monitoring Helm scripts |
 
 Requires **`eks_node_min_size = 0`** in Terraform (default in repo). After changing IAM, run **`terraform apply`** once.
 
 **Still billed while parked:** EKS control plane (~$0.10/hr), NAT gateway, Jenkins ALB (if Jenkins stack exists), EBS volumes for Postgres/Kafka/Grafana.
 
-**Scripts:** `jenkins/scripts/park-platform.sh`, `jenkins/scripts/wake-platform.sh`
+**Scripts:** `jenkins/scripts/lifecycle/park-platform.sh`, `jenkins/scripts/lifecycle/wake-platform.sh` (see `jenkins/scripts/README.md`)
 
 ## Teardown before `terraform destroy` (`deriv-teardown-platform-aws`)
 
@@ -139,7 +149,7 @@ Manual equivalent:
 
 ```bash
 export AWS_REGION=us-west-1 VPC_ID=<vpc-id> EKS_CLUSTER_NAME=deriv-ai-bot-dev
-bash jenkins/scripts/teardown-k8s-aws-orphans.sh
+bash jenkins/scripts/lifecycle/teardown-k8s-aws-orphans.sh
 cd infrastructure/terraform/environments/dev && terraform destroy
 ```
 

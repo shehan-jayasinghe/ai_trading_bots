@@ -40,9 +40,16 @@ variable "volume_size_gb" {
   default     = 40
 }
 
+variable "enable_eks" {
+  description = "If true, attach EKS/kubectl and node-scaling IAM policies to the Jenkins role"
+  type        = bool
+  default     = true
+}
+
 variable "eks_cluster_arn" {
-  description = "EKS cluster ARN for Jenkins CI (kubectl / deploy pipelines)"
+  description = "EKS cluster ARN for Jenkins CI (required when enable_eks is true)"
   type        = string
+  default     = ""
 }
 
 variable "secrets_manager_secret_arns" {

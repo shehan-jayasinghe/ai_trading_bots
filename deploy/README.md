@@ -1,11 +1,13 @@
 # Deploy — Helm platform (dev)
 
-**Plan A:** umbrella chart `helm/deriv-platform` (Postgres + Kafka + backend + workers + frontend + ALB ingress).
+**Plan A:** four platform charts — `deriv-postgres`, `deriv-kafka`, `deriv-apps`, `deriv-ingress` (ALB routes to app Services).
+
+Requires Terraform **`enable_eks = true`** in `infrastructure/terraform/environments/dev/terraform.tfvars`.
 
 | Layer | Tool |
 |-------|------|
 | Cluster + ECR + **EBS CSI** | Terraform `infrastructure/terraform/environments/dev` |
-| Platform on EKS | Ansible `playbooks/eks-platform.yml` |
+| Platform on EKS | Jenkins `deriv-deploy-platform` or `jenkins/scripts/deploy/` |
 | Images | Dockerfiles in `deploy/docker/` → push to ECR |
 
 **Storage:** Helm `values-dev.yaml` sets `storageClass: gp2`. EKS provisions volumes via the **aws-ebs-csi-driver** add-on (Terraform). Without it, Postgres/Kafka PVCs stay `Pending`.
@@ -37,7 +39,7 @@ docker push "$REGISTRY/deriv-workers:latest"
 docker push "$REGISTRY/deriv-frontend:latest"
 ```
 
-Set `image_registry` in `infrastructure/ansible/inventories/dev/group_vars/eks.yml` to `$REGISTRY`.
+Set `ECR_REGISTRY` in Jenkins globals or `jenkins/config/dev.env` to `$REGISTRY`.
 
 ---
 
@@ -53,23 +55,27 @@ terraform output -raw platform_secret_populate_command
 
 JSON keys: `POSTGRES_PASSWORD`, `AUTH_SECRET`, `OPENAI_API_KEY` (optional).
 
-**Jenkins deploy** reads `PLATFORM_SECRET_ID` (default `deriv-ai-bot/dev/platform`) and syncs to K8s `deriv-platform-app-secrets`.
+Grafana secret (`terraform output grafana_secret_populate_command`): `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD`.
+
+**Jenkins deploy** reads `PLATFORM_SECRET_ID` → K8s `deriv-platform-app-secrets`; `GRAFANA_SECRET_ID` → `grafana-admin` in `monitoring`.
 
 **Infra config** (not secrets): `jenkins/config/dev.env.example` or Jenkins globals — ECR, EKS, ACM ARNs, domains.
 
-After `terraform apply`, copy into `eks.yml` (or use `terraform output -raw`):
+After `terraform apply`, set Jenkins globals (or `jenkins/config/dev.env`) from `terraform output`:
 
-| `eks.yml` key | Terraform output |
-|---------------|------------------|
-| `image_registry` | `ecr_registry` |
-| `platform_secret_id` | `platform_secret_name` |
-| `vpc_id` | `vpc_id` |
-| `alb_controller_role_arn` | `aws_lb_controller_role_arn` |
-| `external_dns_role_arn` | `external_dns_role_arn` |
-| `app_acm_certificate_arn` | `app_acm_certificate_arn` |
-| `api_acm_certificate_arn` | `api_acm_certificate_arn` |
+| Jenkins env | Terraform output |
+|-------------|------------------|
+| `ECR_REGISTRY` | `ecr_registry` |
+| `PLATFORM_SECRET_ID` | `platform_secret_name` |
+| `VPC_ID` | `vpc_id` |
+| `ALB_CONTROLLER_ROLE_ARN` | `aws_lb_controller_role_arn` |
+| `EXTERNAL_DNS_ROLE_ARN` | `external_dns_role_arn` |
+| `LOKI_S3_BUCKET` / `LOKI_ROLE_ARN` | `loki_s3_bucket` / `loki_role_arn` |
+| `GRAFANA_SECRET_ID` | `grafana_secret_name` |
+| `GRAFANA_ACM_CERTIFICATE_ARN` | `grafana_acm_certificate_arn` |
+| `GRAFANA_DOMAIN` | `grafana.testenvlab.shop` |
 
-EBS CSI is installed by Terraform (no `eks.yml` key). Verify with `aws eks describe-addon` (see §3 below).
+EBS CSI is installed by Terraform. Verify with `aws eks describe-addon` (see §3 below).
 
 Public URLs (after Ansible deploy + DNS propagation): `app_url` → `https://app.testenvlab.shop`, `api_url` → `https://api.testenvlab.shop`.
 
@@ -91,35 +97,26 @@ Expect add-on status `ACTIVE` and `ebs-csi-controller-*` **Running**.
 ## 4 — Helm dependencies (once)
 
 ```bash
-helm dependency update deploy/helm/deriv-platform
+helm dependency update deploy/helm/deriv-postgres
+helm dependency update deploy/helm/deriv-kafka
 ```
 
 ---
 
-## 5 — Deploy with Ansible
+## 5 — Deploy (Jenkins or scripts)
 
 ```bash
-cd infrastructure/ansible
-ansible-galaxy collection install -r requirements.yml
+# From repo root — same order as deriv-deploy-platform
+export AWS_REGION=us-west-1 EKS_CLUSTER_NAME=deriv-ai-bot-dev
+# ... set VPC_ID, IRSA ARNs, ECR_REGISTRY, etc. (see jenkins/config/dev.env.example)
 
-export AWS_PROFILE=default
-ansible-playbook playbooks/eks-platform.yml -vv
+jenkins/scripts/deploy/preflight/platform-preflight.sh
+jenkins/scripts/deploy/infrastructure/helm-eks-addons-deploy.sh
+jenkins/scripts/deploy/helm-platform-deploy.sh
+jenkins/scripts/deploy/monitoring/helm-monitoring-deploy.sh
 ```
 
-Or Helm only (after secret exists):
-
-```bash
-kubectl create namespace deriv-dev --dry-run=client -o yaml | kubectl apply -f -
-# create secret manually or via Ansible first
-
-helm upgrade --install deriv-platform deploy/helm/deriv-platform \
-  -n deriv-dev --create-namespace \
-  -f deploy/helm/deriv-platform/values.yaml \
-  -f deploy/helm/deriv-platform/values-dev.yaml \
-  --set image.registry="$REGISTRY" \
-  --set image.tag=latest \
-  --wait --timeout 20m
-```
+See `jenkins/README.md` and `deploy/helm/README.md`.
 
 ---
 
@@ -147,13 +144,14 @@ Jenkins pipelines: `jenkins/README.md` — `deriv-build-backend`, `deriv-build-w
 
 ```text
 deploy/
-  docker/           # backend, workers, frontend Dockerfiles
-  helm/deriv-platform/
-    Chart.yaml      # Bitnami postgresql + kafka dependencies
-    values.yaml
-    values-dev.yaml
-    values-prod.yaml   # stub
-    templates/         # backend, workers, frontend, ingress, kafka topics job
+  docker/
+  helm/
+    eks-cluster-addons/   # ALB controller + external-dns
+    eks-monitoring/       # Loki + Promtail + Grafana
+    deriv-postgres/       # PostgreSQL
+    deriv-kafka/          # Kafka + topic bootstrap job
+    deriv-apps/           # backend, workers, frontend
+    deriv-ingress/        # ALB Ingress (app + API hosts)
 ```
 
 ---
@@ -164,5 +162,5 @@ deploy/
 |------|--------|
 | Defaults | `values.yaml` |
 | Dev overrides | `values-dev.yaml` |
-| Secrets | AWS Secrets Manager → K8s `deriv-platform-app-secrets` (Jenkins deploy or Ansible) |
-| CI image tag | `--set image.tag=$GIT_SHA` or `eks.yml` `image_tag` |
+| Secrets | AWS Secrets Manager → K8s `deriv-platform-app-secrets` (`deploy/helm-platform-deploy.sh`) |
+| CI image tag | Jenkins `IMAGE_TAG` → `--set image.tag=...` |

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: deriv-kafka
+description: Kafka for deriv-ai-bot (Bitnami subchart + topic bootstrap job)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: kafka
+    version: "30.1.5"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled

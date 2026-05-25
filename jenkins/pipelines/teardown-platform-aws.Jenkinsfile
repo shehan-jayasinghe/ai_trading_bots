@@ -7,7 +7,7 @@ pipeline {
     agent any
 
     environment {
-        HELM_RELEASE = 'deriv-platform'
+        HELM_RELEASES = 'deriv-ingress deriv-apps deriv-kafka deriv-postgres deriv-platform'
         HELM_NAMESPACE = 'deriv-dev'
     }
 
@@ -42,8 +42,8 @@ pipeline {
 
         stage('Teardown') {
             steps {
-                sh 'chmod +x jenkins/scripts/teardown-k8s-aws-orphans.sh'
-                sh 'jenkins/scripts/teardown-k8s-aws-orphans.sh'
+                sh 'chmod +x jenkins/scripts/lifecycle/teardown-k8s-aws-orphans.sh'
+                sh 'jenkins/scripts/lifecycle/teardown-k8s-aws-orphans.sh'
             }
         }
     }

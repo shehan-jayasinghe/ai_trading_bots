@@ -13,6 +13,12 @@ variable "environment" {
   default = "dev"
 }
 
+variable "enable_eks" {
+  description = "If true, create EKS cluster, node group, IRSA, Loki S3/IRSA, and app/grafana ACM certs. If false, Jenkins + VPC + ECR only."
+  type        = bool
+  default     = true
+}
+
 variable "vpc_name" {
   type    = string
   default = "deriv-ai-dev"
@@ -70,6 +76,12 @@ variable "api_domain" {
   description = "Public backend API URL host (e.g. api.testenvlab.shop)"
   type        = string
   default     = "api.testenvlab.shop"
+}
+
+variable "grafana_domain" {
+  description = "Public Grafana URL host (e.g. grafana.testenvlab.shop)"
+  type        = string
+  default     = "grafana.testenvlab.shop"
 }
 
 variable "jenkins_instance_type" {

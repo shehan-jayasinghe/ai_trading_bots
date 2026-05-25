@@ -1,0 +1,11 @@
+global:
+  environment: dev
+
+namespace:
+  name: deriv-dev
+
+postgresql:
+  primary:
+    persistence:
+      size: 8Gi
+      storageClass: gp2

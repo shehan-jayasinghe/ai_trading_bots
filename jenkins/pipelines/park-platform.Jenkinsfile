@@ -11,7 +11,7 @@ pipeline {
     }
 
     environment {
-        HELM_RELEASE = 'deriv-platform'
+        HELM_INGRESS_RELEASE = 'deriv-ingress'
         HELM_NAMESPACE = 'deriv-dev'
         MONITORING_NAMESPACE = 'monitoring'
         JENKINS_INSTANCE_NAME_TAG = 'deriv-ai-bot-jenkins-dev'
@@ -48,8 +48,8 @@ pipeline {
 
         stage('Park') {
             steps {
-                sh 'chmod +x jenkins/scripts/park-platform.sh'
-                sh 'jenkins/scripts/park-platform.sh'
+                sh 'chmod +x jenkins/scripts/lifecycle/park-platform.sh'
+                sh 'jenkins/scripts/lifecycle/park-platform.sh'
             }
         }
     }

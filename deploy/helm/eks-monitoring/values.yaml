@@ -1,0 +1,75 @@
+# Defaults — use values-dev.yaml + values-dev-s3.yaml when LOKI_S3_BUCKET is set.
+
+loki:
+  fullnameOverride: loki
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    limits_config:
+      retention_period: 168h
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+  monitoring:
+    selfMonitoring:
+      enabled: false
+    lokiCanary:
+      enabled: false
+  test:
+    enabled: false
+
+promtail:
+  fullnameOverride: promtail
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+  daemonset:
+    enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+grafana:
+  fullnameOverride: grafana
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClassName: gp2
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          isDefault: true
+          jsonData:
+            maxLines: 1000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+
+# Set by chart / Jenkins — namespaces to scrape
+platformNamespace: deriv-dev
