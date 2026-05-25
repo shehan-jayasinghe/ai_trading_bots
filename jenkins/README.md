@@ -9,6 +9,9 @@
 | `deriv-build-frontend` | `jenkins/pipelines/build-frontend.Jenkinsfile` |
 | `deriv-deploy-platform` | `jenkins/pipelines/deploy-platform.Jenkinsfile` |
 | `deriv-teardown-platform-aws` | `jenkins/pipelines/teardown-platform-aws.Jenkinsfile` |
+| `deriv-deploy-monitoring` | `jenkins/pipelines/deploy-monitoring.Jenkinsfile` |
+| `deriv-park-platform` | `jenkins/pipelines/park-platform.Jenkinsfile` |
+| `deriv-wake-platform` | `jenkins/pipelines/wake-platform.Jenkinsfile` |
 
 ## One-time Jenkins setup
 
@@ -39,6 +42,8 @@
    | `APP_DOMAIN` | `app.testenvlab.shop` |
    | `API_DOMAIN` | `api.testenvlab.shop` |
    | `PLATFORM_SECRET_ID` | `terraform output -raw platform_secret_name` |
+   | `LOKI_S3_BUCKET` | `terraform output -raw loki_s3_bucket` |
+   | `LOKI_ROLE_ARN` | `terraform output -raw loki_role_arn` |
 
    Optional override per job: copy `jenkins/config/dev.env.example` → `jenkins/config/dev.env` (gitignored).
 
@@ -61,6 +66,7 @@
 7. **Deploy:** New Item → Pipeline → `deriv-deploy-platform` → Script Path: `jenkins/pipelines/deploy-platform.Jenkinsfile`  
    Enable **This project is parameterized** (pipeline defines `IMAGE_TAG`).
 8. **Teardown (before `terraform destroy`):** New Item → Pipeline → `deriv-teardown-platform-aws` → Script Path: `jenkins/pipelines/teardown-platform-aws.Jenkinsfile`
+9. **Park / wake (save cost, keep Terraform):** `deriv-park-platform` / `deriv-wake-platform` — scale pods and nodes to **0**, drop k8s ALB, stop Jenkins EC2; wake scales nodes up and runs Helm deploy.
 
 ## Image tags
 
@@ -96,6 +102,27 @@ curl -sS https://api.testenvlab.shop/hello
 ```
 
 Optional: trigger deploy after each build with **Trigger parameterized build** passing `IMAGE_TAG` from the build job.
+
+## Logs in Grafana (`deriv-deploy-monitoring` or platform deploy)
+
+Platform deploy installs **Loki + Promtail + Grafana** when `MONITORING_ENABLED=true` (default). Requires `terraform apply` for S3 + Loki IRSA, then set `LOKI_S3_BUCKET` and `LOKI_ROLE_ARN` in Jenkins globals.
+
+See [docs/08-monitoring-logs.md](../docs/08-monitoring-logs.md) for port-forward, LogQL, and admin password.
+
+## Park and wake (no destroy)
+
+Use when you are not using the lab for a while but want to keep Terraform state and data on EBS PVCs.
+
+| Job | What it does |
+|-----|----------------|
+| **`deriv-park-platform`** | Scale all `deriv-dev` + `monitoring` Deployments/StatefulSets to **0**, delete Ingress (k8s ALB), scale EKS node group to **0**, optionally **stop** Jenkins EC2 |
+| **`deriv-wake-platform`** | **Start** Jenkins, scale nodes to `EKS_NODE_DESIRED_SIZE` (default 1), run **`helm-platform-deploy.sh`** (parameter `IMAGE_TAG`, default `latest`) |
+
+Requires **`eks_node_min_size = 0`** in Terraform (default in repo). After changing IAM, run **`terraform apply`** once.
+
+**Still billed while parked:** EKS control plane (~$0.10/hr), NAT gateway, Jenkins ALB (if Jenkins stack exists), EBS volumes for Postgres/Kafka/Grafana.
+
+**Scripts:** `jenkins/scripts/park-platform.sh`, `jenkins/scripts/wake-platform.sh`
 
 ## Teardown before `terraform destroy` (`deriv-teardown-platform-aws`)
 

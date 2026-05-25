@@ -158,6 +158,51 @@ resource "aws_iam_role_policy" "jenkins_k8s_teardown" {
   policy = data.aws_iam_policy_document.jenkins_k8s_teardown.json
 }
 
+# Park/wake: scale EKS node groups, stop/start Jenkins EC2.
+data "aws_iam_policy_document" "jenkins_park_wake" {
+  statement {
+    sid    = "EKSNodegroupScale"
+    effect = "Allow"
+    actions = [
+      "eks:UpdateNodegroupConfig",
+      "eks:ListNodegroups",
+      "eks:DescribeNodegroup",
+    ]
+    resources = [
+      var.eks_cluster_arn,
+      "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:nodegroup/${local.eks_cluster_name}/*",
+    ]
+  }
+
+  statement {
+    sid       = "JenkinsEC2Describe"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstances"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "JenkinsEC2StopStart"
+    effect = "Allow"
+    actions = [
+      "ec2:StopInstances",
+      "ec2:StartInstances",
+    ]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "ec2:ResourceTag/Name"
+      values   = [var.name]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "jenkins_park_wake" {
+  name   = "${var.name}-park-wake"
+  role   = aws_iam_role.jenkins.id
+  policy = data.aws_iam_policy_document.jenkins_park_wake.json
+}
+
 resource "aws_iam_instance_profile" "jenkins" {
   name = "${var.name}-profile"
   role = aws_iam_role.jenkins.name

@@ -12,6 +12,7 @@
 | ALB + ACM + Route53 | `alb`, `acm`, `route53-record` |
 | EKS cluster + managed node group | `modules/eks` |
 | EBS CSI driver add-on + IRSA | `modules/eks-irsa-ebs-csi`, `aws_eks_addon.ebs_csi` |
+| Loki log storage (S3) + IRSA | `modules/loki-s3`, `modules/eks-irsa-loki` |
 | ECR repos (`deriv-backend`, `deriv-workers`, `deriv-frontend`) | `modules/ecr` |
 
 ## Apply
@@ -64,6 +65,7 @@ See `infrastructure/ansible/README.md` for Ansible install and unlock password.
 |----------|---------|--------|
 | `eks_cluster_version` | `1.31` | Match AWS supported versions in region |
 | `eks_node_instance_types` | `["t3.medium"]` | Dev node group |
+| `eks_node_min_size` | `0` | Allows **park-platform** to scale nodes to zero |
 | `ecr_repository_names` | backend, workers, frontend | Image repos for CI |
 
 ## Region

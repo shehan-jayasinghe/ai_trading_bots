@@ -1,0 +1,33 @@
+# Promtail ships pod logs to Loki. ${PLATFORM_NAMESPACE} = deriv-dev (application workloads).
+config:
+  clients:
+    - url: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
+  snippets:
+    scrapeConfigs: |
+      - job_name: kubernetes-pods
+        pipeline_stages:
+          - cri: {}
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: ${PLATFORM_NAMESPACE}|monitoring|kube-system
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            target_label: component
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+daemonset:
+  enabled: true

@@ -38,3 +38,9 @@ app_acm_certificate_arn: arn:aws:acm:us-west-1:891377245316:certificate/4eedcfe4
 api_acm_certificate_arn: arn:aws:acm:us-west-1:891377245316:certificate/72d1612c-82f7-4875-947e-2ad0244dd0ac
 external_dns_domain_filter: testenvlab.shop
 external_dns_txt_owner_id: deriv-dev
+
+# Monitoring (terraform output loki_s3_bucket, loki_role_arn)
+monitoring_enabled: true
+monitoring_namespace: monitoring
+loki_s3_bucket: ""
+loki_role_arn: ""

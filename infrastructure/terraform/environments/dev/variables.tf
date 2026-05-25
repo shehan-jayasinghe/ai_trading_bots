@@ -104,13 +104,20 @@ variable "eks_node_desired_size" {
 }
 
 variable "eks_node_min_size" {
-  type    = number
-  default = 1
+  description = "0 allows park-platform to scale nodes to zero without terraform destroy"
+  type        = number
+  default     = 0
 }
 
 variable "eks_node_max_size" {
   type    = number
   default = 2
+}
+
+variable "loki_s3_lifecycle_expire_days" {
+  description = "S3 lifecycle expiration for Loki log chunks (days)"
+  type        = number
+  default     = 90
 }
 
 variable "ecr_repository_names" {

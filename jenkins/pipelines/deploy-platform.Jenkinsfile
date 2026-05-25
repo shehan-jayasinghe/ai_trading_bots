@@ -55,6 +55,9 @@ pipeline {
                     env.EXTERNAL_DNS_DOMAIN_FILTER = cfg.get('EXTERNAL_DNS_DOMAIN_FILTER', env.EXTERNAL_DNS_DOMAIN_FILTER ?: 'testenvlab.shop')
                     env.EXTERNAL_DNS_TXT_OWNER_ID = cfg.get('EXTERNAL_DNS_TXT_OWNER_ID', env.EXTERNAL_DNS_TXT_OWNER_ID ?: 'deriv-dev')
                     env.PLATFORM_SECRET_ID = cfg.get('PLATFORM_SECRET_ID', env.PLATFORM_SECRET_ID ?: 'deriv-ai-bot/dev/platform')
+                    env.LOKI_S3_BUCKET = cfg.get('LOKI_S3_BUCKET', env.LOKI_S3_BUCKET ?: '')
+                    env.LOKI_ROLE_ARN = cfg.get('LOKI_ROLE_ARN', env.LOKI_ROLE_ARN ?: '')
+                    env.MONITORING_ENABLED = cfg.get('MONITORING_ENABLED', env.MONITORING_ENABLED ?: 'true')
                     env.HELM_DEBUG = params.HELM_DEBUG ? 'true' : 'false'
 
                     if (!env.ECR_REGISTRY?.trim()) {
@@ -84,7 +87,11 @@ pipeline {
 
         stage('Helm deploy') {
             steps {
-                sh 'chmod +x jenkins/scripts/helm-platform-deploy.sh jenkins/scripts/eks-ingress-controllers.sh jenkins/scripts/deploy-diagnostics.sh'
+                sh 'chmod +x
+                 jenkins/scripts/helm-platform-deploy.sh
+                 jenkins/scripts/eks-ingress-controllers.sh
+                 jenkins/scripts/eks-monitoring.sh
+                 jenkins/scripts/deploy-diagnostics.sh'
                 sh 'jenkins/scripts/helm-platform-deploy.sh'
             }
         }

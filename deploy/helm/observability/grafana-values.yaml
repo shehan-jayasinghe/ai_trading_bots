@@ -1,0 +1,36 @@
+# Grafana UI with Loki datasource. Admin password from existing secret grafana-admin.
+admin:
+  existingSecret: grafana-admin
+  userKey: admin-user
+  passwordKey: admin-password
+
+persistence:
+  enabled: true
+  size: 2Gi
+  storageClassName: gp2
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        isDefault: true
+        jsonData:
+          maxLines: 1000
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+service:
+  type: ClusterIP
+
+# Dev: use kubectl port-forward svc/grafana -n monitoring 3000:80
+ingress:
+  enabled: false

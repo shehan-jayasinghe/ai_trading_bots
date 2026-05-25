@@ -126,6 +126,16 @@ output "platform_secret_arn" {
   value       = aws_secretsmanager_secret.platform.arn
 }
 
+output "loki_s3_bucket" {
+  description = "S3 bucket for Loki log storage (long-term; used by Grafana/Loki on EKS)"
+  value       = module.loki_s3.bucket_id
+}
+
+output "loki_role_arn" {
+  description = "IRSA role ARN for Loki service account (monitoring:loki)"
+  value       = module.eks_loki_irsa.iam_role_arn
+}
+
 output "platform_secret_populate_command" {
   description = "Run once to store platform secrets (replace placeholder values)"
   value       = <<-EOT

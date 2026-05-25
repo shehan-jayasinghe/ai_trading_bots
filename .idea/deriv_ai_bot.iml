@@ -2,13 +2,7 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/backend" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/workers" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
-      <excludeFolder url="file://$MODULE_DIR$/backend/bot_circuit/.venv" />
-      <excludeFolder url="file://$MODULE_DIR$/tutorials/week_01_openai_agents/.venv" />
-      <excludeFolder url="file://$MODULE_DIR$/backend/.venv" />
-      <excludeFolder url="file://$MODULE_DIR$/workers/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/infrastructure/terraform/environments/dev/.terraform" />
     </content>
     <orderEntry type="jdk" jdkName="uv (deriv_ai_bot)" jdkType="Python SDK" />

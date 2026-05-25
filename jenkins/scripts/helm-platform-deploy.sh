@@ -333,6 +333,9 @@ main() {
   "${SCRIPT_DIR}/eks-ingress-controllers.sh"
   deploy_sync_secrets
   deploy_helm
+  if [[ "${MONITORING_ENABLED:-true}" == "true" ]]; then
+    "${SCRIPT_DIR}/eks-monitoring.sh"
+  fi
   deploy_postflight
 }
 
