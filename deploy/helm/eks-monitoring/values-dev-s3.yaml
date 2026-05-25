@@ -24,6 +24,9 @@ loki:
     name: loki
     annotations:
       eks.amazonaws.com/role-arn: ""
+  # Chunks/index go to S3; compactor/WAL still need a writable path (RO root FS → /var/loki).
   singleBinary:
     persistence:
-      enabled: false
+      enabled: true
+      size: 10Gi
+      storageClass: gp2

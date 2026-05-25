@@ -5,7 +5,7 @@
 | Component | Role |
 |-----------|------|
 | **Promtail** | DaemonSet — reads container stdout from `deriv-dev` pods |
-| **Loki** | Log store (S3 in AWS dev; PVC fallback if bucket unset) |
+| **Loki** | Log store (S3 chunks in AWS dev; small local PVC for compactor/WAL; full PVC if bucket unset) |
 | **Grafana** | UI — Explore logs with LogQL |
 
 Flow: `backend` / `planner` / `executor` → stdout → Promtail → Loki → Grafana.
@@ -85,6 +85,12 @@ kubectl port-forward -n monitoring svc/grafana 3000:80
 {namespace="deriv-dev", component="executor"}
 {namespace="deriv-dev"} |= "ERROR"
 ```
+
+## Troubleshooting
+
+**Loki `CrashLoopBackOff`: `mkdir /var/loki: read-only file system`** — S3 mode still needs `singleBinary.persistence` (see `values-dev-s3.yaml`). Redeploy monitoring after fixing values.
+
+**Promtail `0/1`, readiness HTTP 500** — usually follows unhealthy Loki; fix Loki first.
 
 ## Files
 
