@@ -89,6 +89,10 @@ main() {
     grafana_ingress_values=$(mktemp)
     cat > "${grafana_ingress_values}" <<EOF
 grafana:
+  grafana.ini:
+    server:
+      root_url: https://${GRAFANA_DOMAIN}/
+      domain: ${GRAFANA_DOMAIN}
   ingress:
     enabled: true
     hosts:

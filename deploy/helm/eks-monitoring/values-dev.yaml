@@ -3,6 +3,11 @@
 platformNamespace: deriv-dev
 
 grafana:
+  # Public URL behind ALB — required or UI loads "failed to load application files".
+  grafana.ini:
+    server:
+      root_url: https://grafana.testenvlab.shop/
+      domain: grafana.testenvlab.shop
   ingress:
     enabled: true
     ingressClassName: alb
