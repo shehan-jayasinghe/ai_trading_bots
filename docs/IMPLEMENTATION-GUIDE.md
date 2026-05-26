@@ -8,7 +8,7 @@ End-to-end path from **Run** in FastAPI to daily planner → trade agent chain.
 |--------|---------|-----|
 | **Kafka** between API and workers | Yes for your scale | API stays fast; planner/executor scale separately; replay + DLQ later |
 | **LangGraph** for one trade attempt | Yes | Clear steps, `skip` branch, easy to test without 8 microservices on day one |
-| **CrewAI** for decision | Optional | Good for multi-bot experiments; **rules engine first** in code (faster, cheaper, deterministic). Crew runs only if `OPENAI_API_KEY` is set |
+| **CrewAI + Bedrock** for decision | Yes (with fallback) | CrewAI uses `BEDROCK_DECISION_MODEL_ID`; **rules** if Bedrock/CrewAI fails |
 | **In-process graph first** | Yes (Phase 1) | Split each node to its own Kafka consumer only when you need independent scale |
 | **In-memory planner schedule** | Dev only | Replace with Postgres `Schedule` before production |
 
@@ -50,7 +50,9 @@ KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 
 ```env
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-OPENAI_API_KEY=          # optional; rules used if empty
+BEDROCK_DECISION_MODEL_ID=amazon.nova-micro-v1:0
+BEDROCK_REGION=us-west-1
+# SageMaker + S3 Vectors for RAG — see workers/.env.example
 ```
 
 ## Step-by-step

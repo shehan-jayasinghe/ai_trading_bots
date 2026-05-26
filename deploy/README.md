@@ -53,7 +53,7 @@ terraform output -raw platform_secret_populate_command
 # Replace CHANGE_ME, then run the printed aws secretsmanager put-secret-value command
 ```
 
-JSON keys: `POSTGRES_PASSWORD`, `AUTH_SECRET`, `OPENAI_API_KEY` (optional).
+JSON keys: `POSTGRES_PASSWORD`, `AUTH_SECRET`, `BEDROCK_*`, `SAGEMAKER_EMBEDDING_ENDPOINT`, `S3_VECTORS_*` (see terraform `outputs_secrets.tf`).
 
 Grafana secret (`terraform output grafana_secret_populate_command`): `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD`.
 
