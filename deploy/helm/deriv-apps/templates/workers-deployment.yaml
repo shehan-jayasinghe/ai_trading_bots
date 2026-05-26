@@ -19,6 +19,9 @@ spec:
         app.kubernetes.io/component: planner
         {{- include "deriv-apps.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if .Values.workers.serviceAccount.create }}
+      serviceAccountName: {{ .Values.workers.serviceAccount.name }}
+      {{- end }}
       containers:
         - name: planner
           image: {{ include "deriv-apps.image" (dict "Values" .Values "repository" .Values.workers.repository) }}
@@ -55,6 +58,9 @@ spec:
         app.kubernetes.io/component: executor
         {{- include "deriv-apps.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if .Values.workers.serviceAccount.create }}
+      serviceAccountName: {{ .Values.workers.serviceAccount.name }}
+      {{- end }}
       containers:
         - name: executor
           image: {{ include "deriv-apps.image" (dict "Values" .Values "repository" .Values.workers.repository) }}

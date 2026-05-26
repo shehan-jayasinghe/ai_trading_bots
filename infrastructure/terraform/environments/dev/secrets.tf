@@ -3,7 +3,7 @@
 
 resource "aws_secretsmanager_secret" "platform" {
   name        = "${var.project_name}/${var.environment}/platform"
-  description = "Platform secrets: POSTGRES_PASSWORD, AUTH_SECRET, OPENAI_API_KEY"
+  description = "Platform secrets: POSTGRES_PASSWORD, AUTH_SECRET, BEDROCK_*, SAGEMAKER_EMBEDDING_ENDPOINT"
   tags        = local.common_tags
 }
 

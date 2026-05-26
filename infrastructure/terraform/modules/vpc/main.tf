@@ -1,12 +1,12 @@
 locals {
   eks_public_subnet_tags = var.eks_cluster_name != "" ? {
-    "kubernetes.io/role/elb"                          = "1"
-    "kubernetes.io/cluster/${var.eks_cluster_name}"   = "shared"
+    "kubernetes.io/role/elb"                        = "1"
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
   } : {}
 
   eks_private_subnet_tags = var.eks_cluster_name != "" ? {
-    "kubernetes.io/role/internal-elb"                 = "1"
-    "kubernetes.io/cluster/${var.eks_cluster_name}"   = "shared"
+    "kubernetes.io/role/internal-elb"               = "1"
+    "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
   } : {}
 }
 

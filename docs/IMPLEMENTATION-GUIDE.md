@@ -99,7 +99,7 @@ cd workers && export PYTHONPATH=. && uv run python scripts/publish_execute_test.
 1. Postgres tables: `Schedule`, `Run`, `Trade`, `UserCapital`
 2. Planner reads/writes `Schedule` instead of in-memory dict
 3. Deriv WebSocket in `executor/agents/data.py` and `trading.py`
-4. pgvector RAG in `executor/agents/rag.py`
+4. RAG in `executor/agents/rag.py` — Postgres exact window + S3 Vectors semantic (SageMaker embed; LlamaIndex embedding adapter)
 5. Workflow JSON for user “bots” → rules in `decision_crew.py`
 6. Split LangGraph nodes to Kafka topics per agent (scale-out)
 
@@ -115,5 +115,6 @@ cd workers && export PYTHONPATH=. && uv run python scripts/publish_execute_test.
 ## Troubleshooting
 
 - **No messages**: `KAFKA_ENABLED=true`? Topics created? `docker ps` shows `deriv-kafka-local` healthy?
-- **CrewAI slow/fails**: unset `OPENAI_API_KEY` to use rules-only decision
+- **Decision**: CrewAI + Bedrock (`BEDROCK_DECISION_MODEL_ID`); falls back to rules if CrewAI fails
+- **Bedrock slow/fails**: enable model in Bedrock console; workers IRSA needs Bedrock access on that model
 - **Planner never fires**: `starting_time` must fall in the 30s tick window (UTC in dev); use `publish_execute_test.py` to test executor first

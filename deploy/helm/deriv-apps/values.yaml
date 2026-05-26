@@ -39,6 +39,11 @@ backend:
 workers:
   enabled: true
   repository: deriv-workers
+  serviceAccount:
+    create: true
+    name: deriv-workers
+    # Set after terraform apply: terraform output -raw sagemaker_workers_irsa_role_arn
+    roleArn: ""
   planner:
     replicaCount: 1
   executor:
@@ -46,7 +51,11 @@ workers:
   env:
     PLANNER_TICK_SECONDS: "30"
     DERIV_WS_ENDPOINT: wss://ws.derivws.com/websockets/v3
+    AWS_REGION: us-west-1
+    BEDROCK_REGION: us-west-1
+    BEDROCK_DECISION_MODEL_ID: amazon.nova-micro-v1:0
     CREWAI_TRACING_ENABLED: "false"
+    SAGEMAKER_EMBEDDING_ENDPOINT: ""
 
 frontend:
   enabled: false

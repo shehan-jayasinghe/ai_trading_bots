@@ -13,7 +13,27 @@
 | EKS cluster + managed node group | `modules/eks` |
 | EBS CSI driver add-on + IRSA | `modules/eks-irsa-ebs-csi`, `aws_eks_addon.ebs_csi` |
 | Loki log storage (S3) + IRSA | `modules/loki-s3`, `modules/eks-irsa-loki` |
+| SageMaker **serverless** embedding endpoint (HF `all-MiniLM-L6-v2`) + workers IRSA | `modules/sagemaker-embedding`, `modules/eks-irsa-sagemaker-embed` |
+| S3 Vectors bucket (RAG storage) | `modules/s3vectors-bucket` (`enable_s3vectors_bucket`) |
 | ECR repos (`deriv-backend`, `deriv-workers`, `deriv-frontend`) | `modules/ecr` |
+
+## Root `.tf` layout (one state, split by concern)
+
+| File | Contents |
+|------|----------|
+| `providers.tf` | Terraform/providers (`aws`, `awscc`), shared `locals`, Route53 zone |
+| `data.tf` | Shared data sources (`aws_caller_identity`) |
+| `variables_*.tf` | Inputs: `core`, `eks`, `monitoring`, `rag` |
+| `network.tf` | VPC, security groups |
+| `jenkins.tf` | Jenkins EC2, ALB, ACM (jenkins), DNS |
+| `ecr.tf` | ECR repositories |
+| `eks.tf` | EKS cluster, IRSA (ALB controller, external-dns, EBS CSI), Jenkins cluster access |
+| `platform_acm.tf` | ACM for app / api / grafana (when `enable_eks`) |
+| `secrets.tf` | Secrets Manager shells |
+| `monitoring.tf` | Loki S3 + Loki IRSA |
+| `rag.tf` | SageMaker embedding, S3 Vectors bucket + index, workers IRSA |
+| `outputs_*.tf` | Outputs grouped like variables |
+| `terraform.tfvars` | Environment values |
 
 ## Apply
 

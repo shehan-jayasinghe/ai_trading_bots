@@ -10,7 +10,7 @@ Separate model responsibilities for clarity and control.
 - Outputs: structured decision JSON
 
 ## Embedding Model (RAG)
-- Provider: SageMaker endpoint OR Bedrock embeddings
+- Provider: SageMaker serverless endpoint (`deriv-ai-bot-dev-embed`) with HF `sentence-transformers/all-MiniLM-L6-v2`, OR Bedrock embeddings
 - Role: encode trade summaries / market context for retrieval
 - Outputs: vector + metadata
 

@@ -25,7 +25,11 @@ async def node_indicator(state: TradeState) -> TradeState:
 
 
 async def node_rag(state: TradeState) -> TradeState:
-    state.rag_context = await load_rag(state.snapshot)
+    state.rag_context = await load_rag(
+        state.snapshot,
+        state.market_packet,
+        state.indicator_signal,
+    )
     return state
 
 
@@ -59,7 +63,13 @@ async def node_trade(state: TradeState) -> TradeState:
 
 
 async def node_rag_write(state: TradeState) -> TradeState:
-    await save_rag(state.snapshot, state.trade_result)
+    await save_rag(
+        state.snapshot,
+        state.trade_result,
+        indicator=state.indicator_signal,
+        mm_meta=state.mm_meta,
+        run_id=state.run_id or None,
+    )
     return state
 
 

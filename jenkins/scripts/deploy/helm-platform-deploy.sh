@@ -41,7 +41,11 @@ sync_platform_secrets() {
 
   POSTGRES_PASSWORD=$(echo "${app_json}" | jq -r '.POSTGRES_PASSWORD // empty')
   AUTH_SECRET=$(echo "${app_json}" | jq -r '.AUTH_SECRET // empty')
-  OPENAI_API_KEY=$(echo "${app_json}" | jq -r '.OPENAI_API_KEY // empty')
+  SAGEMAKER_EMBEDDING_ENDPOINT=$(echo "${app_json}" | jq -r '.SAGEMAKER_EMBEDDING_ENDPOINT // empty')
+  S3_VECTORS_BUCKET_NAME=$(echo "${app_json}" | jq -r '.S3_VECTORS_BUCKET_NAME // empty')
+  S3_VECTORS_INDEX_NAME=$(echo "${app_json}" | jq -r '.S3_VECTORS_INDEX_NAME // empty')
+  BEDROCK_REGION=$(echo "${app_json}" | jq -r '.BEDROCK_REGION // empty')
+  BEDROCK_DECISION_MODEL_ID=$(echo "${app_json}" | jq -r '.BEDROCK_DECISION_MODEL_ID // empty')
 
   for key in POSTGRES_PASSWORD AUTH_SECRET; do
     [[ -n "${!key}" ]] || { log "ERROR: missing ${key} in ${PLATFORM_SECRET_ID}"; exit 1; }
@@ -52,7 +56,11 @@ sync_platform_secrets() {
     --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
     --from-literal=postgres-password="${POSTGRES_PASSWORD}" \
     --from-literal=AUTH_SECRET="${AUTH_SECRET}" \
-    --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
+    --from-literal=SAGEMAKER_EMBEDDING_ENDPOINT="${SAGEMAKER_EMBEDDING_ENDPOINT}" \
+    --from-literal=S3_VECTORS_BUCKET_NAME="${S3_VECTORS_BUCKET_NAME}" \
+    --from-literal=S3_VECTORS_INDEX_NAME="${S3_VECTORS_INDEX_NAME}" \
+    --from-literal=BEDROCK_REGION="${BEDROCK_REGION:-${AWS_REGION}}" \
+    --from-literal=BEDROCK_DECISION_MODEL_ID="${BEDROCK_DECISION_MODEL_ID}" \
     --dry-run=client -o yaml | kubectl apply -f -
   export POSTGRES_PASSWORD
 }

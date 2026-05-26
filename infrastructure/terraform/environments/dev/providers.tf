@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    awscc = {
+      source  = "hashicorp/awscc"
+      version = ">= 1.79.0"
+    }
   }
 }
 
@@ -23,6 +27,12 @@ provider "aws" {
   }
 }
 
+provider "awscc" {
+  region = var.aws_region
+
+  shared_credentials_files = [pathexpand("${path.module}/.aws/credentials")]
+}
+
 locals {
   common_tags = {
     Project     = var.project_name
@@ -30,6 +40,8 @@ locals {
   }
 
   eks_cluster_name = "${var.project_name}-${var.environment}"
+
+  s3vectors_bucket_name = "${var.project_name}-${var.environment}-rag-vectors"
 }
 
 data "aws_route53_zone" "root" {

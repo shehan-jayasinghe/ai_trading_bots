@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 module "loki_s3" {
   count = var.enable_eks ? 1 : 0
 
