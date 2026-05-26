@@ -4,7 +4,7 @@ Specs for **test → failure capture → triage → PR** automation. Not part of
 
 | File | Purpose |
 |------|---------|
-| [PLAN.md](PLAN.md) | Phased rollout (safety → S3 → Lambda → CodeBuild → optional memory) |
+| [PLAN.md](PLAN.md) | Phased rollout, folder structure, **AWS setup**, **3 flows** (test / live / midnight) |
 | [prompts.md](prompts.md) | Bedrock prompt drafts (triage, fix, PR summary) |
 
 No runtime code here yet. Trade RAG stays in `workers/` (separate S3 index if factory memory is added later).
