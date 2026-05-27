@@ -1,10 +1,33 @@
-# Agentic Worker Factory
+# Worker factory
 
-Specs for **test → failure capture → triage → PR** automation. Not part of live trading (`workers/executor/`).
+Single-unit test runner for phase 0 (backend API + frontend UI).
 
-| File | Purpose |
-|------|---------|
-| [PLAN.md](PLAN.md) | Phased rollout, folder structure, **AWS setup**, **3 flows** (test / live / midnight) |
-| [prompts.md](prompts.md) | Bedrock prompt drafts (triage, fix, PR summary) |
+## Run
 
-No runtime code here yet. Trade RAG stays in `workers/` (separate S3 index if factory memory is added later).
+```bash
+cd worker_factory
+cp .env.example .env   # optional
+python run.py
+```
+
+Use one venv for the whole factory when you add dependencies:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt  # when added
+.venv/bin/python run.py
+```
+
+## Layout
+
+| Path | Role |
+|------|------|
+| `run.py` | Entrypoint |
+| `config.py` | Paths + env |
+| `agents/test_agent.py` | Test agent (backend → frontend) |
+| `utils/` | Shared helpers |
+
+## TODO
+
+- `tests/api/` — 4 backend pytest tests
+- `tests/playwright/` — 3 UI tests
+- Incident capture / S3 (see `PLAN.md`)

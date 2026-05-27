@@ -1,12 +1,30 @@
 # Worker factory — phased plan
 
-Documentation only. No Lambda, ECS, or CI code in this folder yet.
+## Current step — Phase 0: Auth testing (API + UI)
 
-## Goal
+**Status: in progress.** Implement and run tests until signup/login API and UI responses pass. No Lambda/SQS/Jenkins automation yet.
+
+| Deliverable | Location |
+|-------------|----------|
+| **Test agent** | [agents/test_runner/run.py](agents/test_runner/run.py) — `python -m agents.test_runner.run` (or container `ENTRYPOINT`) |
+| Scenario catalog | [tests_catalog/scenarios.yaml](tests_catalog/scenarios.yaml) |
+| API tests (4) | [tests/api/test_auth_api.py](tests/api/test_auth_api.py) |
+| UI tests (3) | [tests/playwright/auth.spec.ts](tests/playwright/auth.spec.ts) |
+| Failure capture (S3 + local) | [tests/helpers/incident.py](tests/helpers/incident.py) |
+| Pull tool | [tests/helpers/pull_incident.py](tests/helpers/pull_incident.py) |
+| Runbook | [docs/TEST-FLOWS.md](docs/TEST-FLOWS.md) |
+
+**Run:** `cd worker_factory && python3 -m agents.test_runner.run` (backend first, then frontend; stops on fail). On fail → `.factory-incidents/` and optionally `s3://LOKI_S3_BUCKET/factory/errors/<backend|frontend>/...`.
+
+**Exit criteria for Phase 0:** all scenarios in TEST-FLOWS run order pass against dev or local `APP_DOMAIN` / `API_DOMAIN`.
+
+---
+
+## Goal (full factory)
 
 Test the platform (UI login/signup, API, deploy smoke) → on failure upload evidence to S3 → classify error → Bedrock triage → optional fix PR or vector + user comms. **Separate** from trading `workers/executor/`.
 
-## Flow
+## Flow (later phases)
 
 ```text
 [Test runner] scenarios (auth.login.ui, auth.signup.api, …)
@@ -19,36 +37,31 @@ Test the platform (UI login/signup, API, deploy smoke) → on failure upload evi
 
 ## Folder structure
 
-Planned layout under `worker_factory/`. **Not all paths exist yet**—add folders/files as each phase ships.
+Layout under `worker_factory/`. **Phase 0** paths exist; other agents/infra are later.
 
 ```text
 worker_factory/
 ├── README.md
-├── PLAN.md                    # this file
-├── prompts.md                 # Bedrock prompt drafts
-│
-├── docs/                      # (planned) split when this plan grows
-│   ├── AGENTS.md              # agent responsibilities + triggers
-│   ├── ERROR-TAXONOMY.md      # code vs information vs unknown
-│   └── S3-LAYOUT.md           # logs/ vs errors/ prefixes
-│
-├── knowledge/                 # (planned) triage KB — no secrets
-│   ├── components.md          # api, frontend-auth, workers, deploy
-│   └── auth-runbook.md        # login/signup flows, common failures
-│
-├── schemas/                   # (planned) FailureBundle, classification, vector record
-│   ├── failure_bundle.json
-│   ├── incident_classification.json
-│   └── vector_incident_record.json
-│
+├── PLAN.md
+├── prompts.md
+├── docs/
+│   └── TEST-FLOWS.md          # phase 0 run order + env
 ├── tests_catalog/
-│   └── scenarios.yaml         # scenario ids, severity hints for testers
-│
-├── tests/                     # (planned) factory-owned runners — targets frontend/backend
-│   ├── playwright/            # UI: login, signup
-│   ├── api/                   # HTTP smoke (signup, health)
-│   └── helpers/               # build bundle, upload S3 on fail
-│
+│   └── scenarios.yaml
+├── config/
+│   └── settings.py            # FACTORY_ROOT paths + .env (all agents import this)
+├── .env.example
+├── agents/
+│   └── test_runner/           # phase 0: run.py (pytest + Playwright)
+├── tests/
+│   ├── README.md
+│   ├── requirements.txt
+│   ├── conftest.py
+│   ├── api/test_auth_api.py
+│   ├── playwright/            # package.json + auth.spec.ts
+│   └── helpers/               # incident, pull, record_ui_failure
+├── knowledge/                 # (planned)
+├── schemas/                   # (planned)
 ├── agents/                    # (planned) one subfolder per logical agent
 │   ├── test_runner/
 │   ├── error_capture/
@@ -59,7 +72,6 @@ worker_factory/
 │   └── midnight_reviewer/
 │
 ├── tools/                     # (planned) shared: s3, bedrock, github, vector, redact
-├── orchestrator/              # (planned) CI hook, EventBridge Lambda, midnight cron
 └── infra/                     # (planned) factory bucket, IAM, EventBridge (or link to terraform)
 ```
 
@@ -75,17 +87,21 @@ worker_factory/
 | Fix agent | `agents/fix_agent/` | Clone latest GitHub, Bedrock diff, re-test, PR |
 | Midnight reviewer | `agents/midnight_reviewer/` | Scheduled scan of `errors/`, dedupe, re-triage |
 
-### S3 layout (factory history bucket)
+### S3 layout (reuse `LOKI_S3_BUCKET` — single source of truth)
+
+Loki chunk keys stay untouched. Factory writes under `factory/errors/` by **component**:
 
 ```text
-s3://<factory-history-bucket>/
-├── logs/                      # normal app/request logs
-└── errors/                    # incidents only (tests, 5xx, classified UI failures)
-    └── <yyyy>/<mm>/<dd>/<incident_id>/
-        ├── bundle.json
-        ├── api_response.json
-        ├── ui_console.log
-        └── screenshot.png     # optional
+s3://<LOKI_S3_BUCKET>/
+├── (Loki-managed keys)
+└── factory/
+    └── errors/
+        ├── backend/<yyyy>/<mm>/<dd>/<incident_id>/   # API tests
+        ├── frontend/<yyyy>/<mm>/<dd>/<incident_id>/ # Playwright
+        └── workers/<yyyy>/<mm>/<dd>/<incident_id>/   # later
+            ├── bundle.json
+            ├── api_response.json   # backend only
+            └── ui_console.log      # frontend only
 ```
 
 ### Repo areas the factory tests (unchanged location)
@@ -109,7 +125,7 @@ New capabilities (do not mix into `workers/executor/`):
 - **Midnight job** to re-process `errors/` like a repeat test flow.
 - **Allowlisted auto-fix** paths: `frontend/`, `backend/`, `tests/`, `worker_factory/`, `deploy/` — not secrets or `.env`.
 
-## Phase 1 — Safety
+## Phase 1 — Safety (after Phase 0 green)
 
 - Factory IAM: read S3 history, Bedrock invoke, GitHub PR scope — no trade execution or infra destroy.
 - All changes via PR; allowlisted paths only (`tests/`, `workers/`, `deploy/`, `worker_factory/`, `docs/`, `frontend/`, `backend/`).
