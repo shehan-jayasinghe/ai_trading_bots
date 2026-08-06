@@ -1,9 +1,12 @@
 """
 Phase 0 test agent — single Python unit.
 
-Backend (4 API) then frontend (3 UI). Test implementations are TODO.
+Backend API (signup + sign-in) then frontend UI (TODO).
 """
 from __future__ import annotations
+
+import os
+import sys
 
 import config
 
@@ -14,19 +17,30 @@ def _print_plan() -> None:
     print(f"APP_DOMAIN={config.app_domain}")
     print(f"API_DOMAIN={config.resolved_api_domain}")
     print(f"LOKI_S3_BUCKET={bucket}")
-    print("Backend: TODO — 4 API tests (pytest)")
-    print("Frontend: TODO — 3 UI tests (Playwright)")
+    print("Backend: signup + sign-in API tests (pytest)")
+    print("Frontend: TODO — Playwright")
     print()
 
 
 def run_backend() -> int:
-    # TODO: pytest tests/api/ (same interpreter: sys.executable -m pytest)
-    print("--- Backend: skipped (TODO) ---\n")
-    return 0
+    import pytest
+
+    root = str(config.FACTORY_ROOT)
+    tests = str(config.TESTS_DIR)
+    for path in (root, tests):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    os.chdir(tests)
+    print("--- Backend (pytest): signup + sign-in API ---")
+    code = pytest.main(["api/test_auth_api.py", "-v", "--tb=short"])
+    if code == 0:
+        print("Backend: PASS\n")
+    else:
+        print("Backend: FAIL (see .factory-incidents/ or S3 factory/errors/backend/)\n")
+    return int(code)
 
 
 def run_frontend() -> int:
-    # TODO: npm test in tests/playwright
     print("--- Frontend: skipped (TODO) ---\n")
     return 0
 
@@ -38,7 +52,7 @@ def run() -> int:
         return code
     code = run_frontend()
     if code == 0:
-        print("=== Result: PASS (stubs — add tests next) ===")
+        print("=== Result: PASS ===")
     else:
         print("=== Result: FAIL ===")
     return code
