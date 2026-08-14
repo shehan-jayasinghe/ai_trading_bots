@@ -178,3 +178,118 @@ a {
 .status-error {
   color: #f85149;
 }
+
+.chart-empty-static {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #8b949e;
+}
+
+.materials {
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  background: #0f1419;
+  padding: 1rem;
+}
+
+.flow-charts {
+  margin: 1rem 0 1.25rem;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.materials-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.materials-symbol {
+  color: #8b949e;
+  font-size: 0.85rem;
+}
+
+.materials-price {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.reaction {
+  text-transform: capitalize;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  background: #21262d;
+  font-size: 0.85rem;
+}
+
+.reaction-sell_absorbed_reclaim {
+  background: #163820;
+  color: #3fb950;
+}
+
+.reaction-buy_absorbed_reject {
+  background: #3d1418;
+  color: #f85149;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.metric-grid article {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.metric-grid h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  color: #8b949e;
+  font-weight: 500;
+}
+
+.metric-grid p {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.metric-sub {
+  display: block;
+  margin-top: 0.25rem;
+  color: #8b949e;
+  font-size: 0.8rem;
+}
+
+.pos {
+  color: #3fb950;
+}
+
+.neg {
+  color: #f85149;
+}
+
+.window-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.window-table th,
+.window-table td {
+  text-align: left;
+  padding: 0.45rem 0.5rem;
+  border-top: 1px solid #21262d;
+}
+
+.window-table th {
+  color: #8b949e;
+  font-weight: 500;
+}

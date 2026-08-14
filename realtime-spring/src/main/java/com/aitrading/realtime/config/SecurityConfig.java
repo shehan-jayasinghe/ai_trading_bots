@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/ws", "/h2-console/**").permitAll()
+                        .requestMatchers("/health", "/ws", "/ws/flow", "/h2-console/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )

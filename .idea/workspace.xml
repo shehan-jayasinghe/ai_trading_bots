@@ -4,15 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling">
-      <change beforePath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" afterDir="false" />
+    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="standardize Kafka topic naming: replace dots with hyphens across all configurations, docs, and environments to align with best practices and avoid JMX metric warnings">
+      <change beforePath="$PROJECT_DIR$/docs/architecture/frontend/nextjs-candle-stream-ui.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/frontend/nextjs-candle-stream-ui.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/architecture/springboot/websocket/springboot-kafka-websocket.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/springboot/websocket/springboot-kafka-websocket.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/lib/stream/candle-stream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/lib/stream/candle-stream.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/local-env/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/local-env/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/realtime-spring/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/realtime-spring/src/main/java/com/aitrading/realtime/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/src/main/java/com/aitrading/realtime/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/realtime-spring/src/main/java/com/aitrading/realtime/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/src/main/java/com/aitrading/realtime/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/realtime-spring/src/main/java/com/aitrading/realtime/controller/HealthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/src/main/java/com/aitrading/realtime/controller/HealthController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/realtime-spring/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workers/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/workers/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workers/app/kafka.py" beforeDir="false" afterPath="$PROJECT_DIR$/workers/app/kafka.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workers/app/pool.py" beforeDir="false" afterPath="$PROJECT_DIR$/workers/app/pool.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workers/app/producers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/workers/app/producers/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workers/app/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/workers/app/settings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -246,14 +256,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1777928501521</updated>
-    </task>
-    <task id="LOCAL-00018" summary="deploy infrastructure and platform: provision EKS cluster, setup Helm charts for backend, Kafka, PostgreSQL, and workers; configure Ansible playbooks, Dockerfiles, and Terraform modules for seamless deployment and orchestration">
-      <option name="closed" value="true" />
-      <created>1779436083031</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1779436083031</updated>
     </task>
     <task id="LOCAL-00019" summary="set up Jenkins CI pipelines and infrastructure: add Docker-based pipelines to build and push backend and worker images to ECR; configure Ansible tasks for CI tools (Docker, AWS CLI, kubectl, Helm); document Jenkins setup and usage">
       <option name="closed" value="true" />
@@ -639,7 +641,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786700806169</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <task id="LOCAL-00067" summary="standardize Kafka topic naming: replace dots with hyphens across all configurations, docs, and environments to align with best practices and avoid JMX metric warnings">
+      <option name="closed" value="true" />
+      <created>1786704115189</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1786704115189</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -670,7 +680,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="update Helm values and deployment scripts: add `adminPasswordKey` for Bitnami PostgreSQL chart compatibility" />
     <MESSAGE value="update Ansible dev inventory: set AWS-specific IDs and ARNs for EKS resources in `eks.yml`" />
     <MESSAGE value="add AWS Load Balancer Controller and external-dns setup: implement `eks-ingress-controllers.sh`, update Jenkins pipeline, Helm scripts, and environment configurations" />
     <MESSAGE value="add external-dns Helm setup: update Ansible tasks and Jenkins scripts to include external-dns chart repository and deployment" />
@@ -695,7 +704,8 @@
     <MESSAGE value="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment" />
     <MESSAGE value="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration" />
     <MESSAGE value="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling" />
+    <MESSAGE value="standardize Kafka topic naming: replace dots with hyphens across all configurations, docs, and environments to align with best practices and avoid JMX metric warnings" />
+    <option name="LAST_COMMIT_MESSAGE" value="standardize Kafka topic naming: replace dots with hyphens across all configurations, docs, and environments to align with best practices and avoid JMX metric warnings" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

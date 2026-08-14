@@ -56,7 +56,7 @@ services:
           /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BOOT \
             --delete --topic $$legacy 2>/dev/null || true
         done
-        for t in candles-btc candles-gold; do
+        for t in candles-btc candles-gold market-trades market-orderbook market-flow; do
           /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BOOT \
             --create --if-not-exists --topic $$t --partitions 6 --replication-factor 1
         done

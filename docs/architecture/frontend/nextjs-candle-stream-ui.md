@@ -122,11 +122,22 @@ Open: **http://localhost:3000/dashboard**
 
 ## REST history
 
-On tab/timeframe change, UI loads last candles before live stream:
+On tab/timeframe change, UI loads last candles before live stream (same-origin proxy → Spring):
 
 ```http
 GET /api/candles?entity=btc&timeframe=1m
 ```
+
+Next.js rewrites `/api/candles`, `/api/flow`, and `/health` to Spring on port 8080.
+
+## Local dev checklist
+
+If the dashboard shows **Connecting…** and **0 candles**:
+
+1. **Stack running:** `docker compose up -d` (Kafka), workers (`uvicorn`), `mvn spring-boot:run` (port 8080), `npm run dev` (port 3000).
+2. **Restart frontend** after pulling config changes (`next.config.ts` rewrites).
+3. **Restart Spring** if you open the UI at `http://127.0.0.1:3000` (CORS must allow both `localhost` and `127.0.0.1`).
+4. Either URL works: `http://localhost:3000/dashboard` or `http://127.0.0.1:3000/dashboard`.
 
 ## UI tabs
 
@@ -137,8 +148,13 @@ GET /api/candles?entity=btc&timeframe=1m
 
 Timeframe dropdown per entity (see `src/lib/config.ts`).
 
+## Materials (Binance flow)
+
+Dashboard tab **Materials** connects to `ws://localhost:8080/ws/flow`. Metric cards use the rolling **1 minute** window (with this-second values as a subtitle). Each 1s snapshot is **appended** to a rolling history (up to 300 seconds) and plotted: price over time, plus buy / sell / delta. Instant 1s / 5s / 15s / 1m remain in the table.
+
+See [binance-market-flow.md](../binance/worker/binance-market-flow.md).
+
 ## Out of scope
 
-- Volume / materials workers
 - Trade placement
 - Clerk JWT passed to Spring WebSocket (add later)

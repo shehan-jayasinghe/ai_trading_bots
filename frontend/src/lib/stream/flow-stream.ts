@@ -1,12 +1,13 @@
-import type { CandleEnvelope, ClientFilter, StreamStatus } from "@/types/candle";
+import type { FlowSnapshot } from "@/types/flow";
+import type { StreamStatus } from "@/types/candle";
 import { config } from "@/lib/config";
 
-type MessageHandler = (candle: CandleEnvelope) => void;
+type MessageHandler = (snap: FlowSnapshot) => void;
 type StatusHandler = (status: StreamStatus, detail?: string) => void;
 
-export class CandleStreamClient {
+export class FlowStreamClient {
   private ws: WebSocket | null = null;
-  private filter: ClientFilter | null = null;
+  private symbol = "BTCUSDT";
   private onMessage: MessageHandler;
   private onStatus: StatusHandler;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -16,18 +17,17 @@ export class CandleStreamClient {
     this.onStatus = onStatus;
   }
 
-  connect(filter: ClientFilter) {
-    this.filter = filter;
+  connect(symbol: string) {
+    this.symbol = symbol;
     this.clearReconnect();
     this.close();
-
     this.onStatus("connecting");
-    const ws = new WebSocket(config.wsUrl);
+    const ws = new WebSocket(config.wsFlowUrl);
     this.ws = ws;
 
     ws.onopen = () => {
       this.onStatus("open");
-      ws.send(JSON.stringify({ entity: filter.entity, timeframe: filter.timeframe }));
+      ws.send(JSON.stringify({ symbol: this.symbol }));
     };
 
     ws.onmessage = (event) => {
@@ -36,19 +36,17 @@ export class CandleStreamClient {
         return;
       }
       try {
-        const candle = JSON.parse(raw) as CandleEnvelope;
-        if (candle.entity && candle.payload) {
-          this.onMessage(candle);
+        const snap = JSON.parse(raw) as FlowSnapshot;
+        if (snap.symbol && snap.price != null) {
+          this.onMessage(snap);
         }
       } catch {
-        // ignore non-candle frames
+        // ignore
       }
     };
 
-    ws.onerror = () => {
+    ws.onerror = () =>
       this.onStatus("error", "WebSocket error — is Spring Boot running on :8080?");
-    };
-
     ws.onclose = (event) => {
       const detail =
         event.code === 1006
@@ -59,16 +57,12 @@ export class CandleStreamClient {
     };
   }
 
-  updateFilter(filter: ClientFilter) {
-    this.filter = filter;
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ entity: filter.entity, timeframe: filter.timeframe }));
-      return;
-    }
-    this.connect(filter);
+  dispose() {
+    this.clearReconnect();
+    this.close();
   }
 
-  close() {
+  private close() {
     if (this.ws) {
       this.ws.onclose = null;
       this.ws.close();
@@ -76,19 +70,9 @@ export class CandleStreamClient {
     }
   }
 
-  dispose() {
-    this.clearReconnect();
-    this.close();
-  }
-
   private scheduleReconnect() {
-    if (!this.filter) return;
     this.clearReconnect();
-    this.reconnectTimer = setTimeout(() => {
-      if (this.filter) {
-        this.connect(this.filter);
-      }
-    }, 3000);
+    this.reconnectTimer = setTimeout(() => this.connect(this.symbol), 3000);
   }
 
   private clearReconnect() {

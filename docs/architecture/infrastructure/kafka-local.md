@@ -25,14 +25,17 @@ Broker:
 | Host (producers on your machine) | `localhost:9092` |
 | Other containers on the compose network | `kafka:29092` |
 
-## Topics (Phase 1) — candles only
+## Topics — candles + market flow
 
 | Topic | Producer | Payload |
 |-------|----------|---------|
-| `candles-btc` | Binance | BTC OHLCV bars (`1s`, `2s`, `1m`, …) |
-| `candles-gold` | Deriv | Gold OHLCV bars (`1s`, `1m`, `2m`, `3m`, …) |
+| `candles-btc` | Binance candles | BTC OHLCV |
+| `candles-gold` | Deriv candles | Gold OHLCV |
+| `market-trades` | Binance flow | Aggressive trades (key = symbol) |
+| `market-orderbook` | Binance flow | 1s book liquidity snapshot |
+| `market-flow` | Binance flow | Materials: delta, aggression, liquidity, reaction |
 
-No tick topics. Producers may use live price feeds internally to **build** 1s candles, but Kafka only stores candle time series.
+See [binance-market-flow.md](../binance/worker/binance-market-flow.md).
 
 Create topics after the broker is healthy (example):
 

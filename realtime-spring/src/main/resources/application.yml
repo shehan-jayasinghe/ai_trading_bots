@@ -34,10 +34,12 @@ app:
   kafka:
     topic-candles-btc: ${KAFKA_TOPIC_CANDLES_BTC:candles-btc}
     topic-candles-gold: ${KAFKA_TOPIC_CANDLES_GOLD:candles-gold}
+    topic-market-flow: ${KAFKA_TOPIC_MARKET_FLOW:market-flow}
   websocket:
     path: /ws
+    flow-path: /ws/flow
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
 
 logging:
   level:

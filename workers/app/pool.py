@@ -7,6 +7,7 @@ from typing import Any
 from app.kafka import KafkaPublisher
 from app.producers.binance import BinanceProducerWorker
 from app.producers.deriv import DerivProducerWorker
+from app.producers.flow import BinanceFlowWorker
 from app.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,8 @@ class ProducerWorkerPool:
 
         if self._settings.worker_enable_binance:
             self._workers.append(BinanceProducerWorker(self._settings, self._kafka))
+        if self._settings.worker_enable_binance_flow:
+            self._workers.append(BinanceFlowWorker(self._settings, self._kafka))
         if self._settings.worker_enable_deriv:
             self._workers.append(DerivProducerWorker(self._settings, self._kafka))
 

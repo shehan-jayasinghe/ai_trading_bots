@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiokafka import AIOKafkaProducer
 
@@ -48,3 +49,13 @@ class KafkaPublisher:
             envelope.entity,
             envelope.timeframe,
         )
+
+    async def publish_json(self, topic: str, key: str, payload: dict[str, Any], *, wait: bool = True) -> None:
+        if self._producer is None:
+            raise RuntimeError("KafkaPublisher not started")
+        value = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+        key_bytes = key.encode("utf-8")
+        if wait:
+            await self._producer.send_and_wait(topic, value=value, key=key_bytes)
+        else:
+            await self._producer.send(topic, value=value, key=key_bytes)
