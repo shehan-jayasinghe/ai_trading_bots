@@ -7,7 +7,7 @@ No tick topics — Kafka stores candle time series only. Deriv’s websocket quo
 ## Goal
 
 ```text
-Deriv WebSocket  →  normalize gold candles (1s / 1m / 2m / 3m / …)  →  Kafka candles.gold
+Deriv WebSocket  →  normalize gold candles (1s / 1m / 2m / 3m / …)  →  Kafka candles-gold
 ```
 
 ## Flow chart
@@ -21,7 +21,7 @@ flowchart TD
   K[Produce to Kafka]
 
   E --> A --> F --> B --> K
-  K --> C[candles.gold]
+  K --> C[candles-gold]
 ```
 
 ## Auth (client app → env)
@@ -34,7 +34,7 @@ flowchart TD
 | `DERIV_SYMBOL` | Yes | e.g. `frxXAUUSD` |
 | `DERIV_TIMEFRAMES` | Yes | e.g. `1s,1m,2m,3m` |
 | `KAFKA_BOOTSTRAP_SERVERS` | Yes | e.g. `localhost:9092` |
-| `KAFKA_TOPIC_CANDLES_GOLD` | No | Default `candles.gold` |
+| `KAFKA_TOPIC_CANDLES_GOLD` | No | Default `candles-gold` |
 
 ## Timeframes (gold)
 
@@ -48,7 +48,7 @@ flowchart TD
 
 ## Kafka publish rules
 
-1. **Topic:** `candles.gold` only
+1. **Topic:** `candles-gold` only
 2. **Key:**
 
    ```text
@@ -72,7 +72,7 @@ sequenceDiagram
   P->>D: Subscribe quote stream
   D-->>P: Quotes
   P->>P: Close 1s / 1m / 2m / 3m candles
-  P->>Kafka: produce(candles.gold, key=gold\|tf\|epoch)
+  P->>Kafka: produce(candles-gold, key=gold\|tf\|epoch)
 ```
 
 ## Alignment with Binance
@@ -80,8 +80,8 @@ sequenceDiagram
 ```mermaid
 flowchart LR
   subgraph second_T["Wall clock second T"]
-    B[btc\|1s\|T → candles.btc]
-    G[gold\|1s\|T → candles.gold]
+    B[btc\|1s\|T → candles-btc]
+    G[gold\|1s\|T → candles-gold]
   end
   W[Future worker joins on bucket_epoch]
   B --> W

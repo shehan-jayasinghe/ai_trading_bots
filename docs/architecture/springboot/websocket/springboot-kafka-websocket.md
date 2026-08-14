@@ -9,7 +9,7 @@ No STOMP. No REST CRUD. Clerk / Next.js attach later.
 STOMP is an extra messaging protocol on top of WebSocket (`CONNECT`, `SUBSCRIBE`, `/topic/...`). Spring likes it for many destinations. We only need **one socket** and candle JSON — raw WebSocket is enough.
 
 ```text
-candles.btc + candles.gold  →  Spring Boot consumer  →  deserialize  →  ws://…/ws  →  UI
+candles-btc + candles-gold  →  Spring Boot consumer  →  deserialize  →  ws://…/ws  →  UI
 ```
 
 ## Flow
@@ -17,8 +17,8 @@ candles.btc + candles.gold  →  Spring Boot consumer  →  deserialize  →  ws
 ```mermaid
 flowchart LR
   subgraph kafka["Kafka"]
-    B[candles.btc]
-    G[candles.gold]
+    B[candles-btc]
+    G[candles-gold]
   end
 
   subgraph boot["Spring Boot"]
@@ -93,7 +93,7 @@ Ignore unknown properties so producer extras (`source_interval`) do not break th
 | Setting | Value |
 |---------|--------|
 | Bootstrap | `localhost:9092` |
-| Topics | `candles.btc`, `candles.gold` |
+| Topics | `candles-btc`, `candles-gold` |
 | Group | `spring-websocket-candles` |
 | Key deserializer | `StringDeserializer` |
 | Value deserializer | `StringDeserializer` then Jackson, **or** `JsonDeserializer` bound to `CandleEnvelope` |
@@ -112,7 +112,7 @@ sequenceDiagram
 
   UI->>WS: WebSocket handshake
   UI->>WS: optional filter JSON
-  K-->>L: record candles.btc
+  K-->>L: record candles-btc
   L->>L: deserialize CandleEnvelope
   L->>WS: send text to matching sessions
   WS-->>UI: candle JSON
@@ -122,8 +122,8 @@ sequenceDiagram
 
 ```env
 SPRING_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-KAFKA_TOPIC_CANDLES_BTC=candles.btc
-KAFKA_TOPIC_CANDLES_GOLD=candles.gold
+KAFKA_TOPIC_CANDLES_BTC=candles-btc
+KAFKA_TOPIC_CANDLES_GOLD=candles-gold
 KAFKA_GROUP_ID=spring-websocket-candles
 SERVER_PORT=8080
 ```
@@ -161,7 +161,7 @@ Health: `GET /health`
 
 ```mermaid
 flowchart TB
-  K[Kafka candles.btc / candles.gold]
+  K[Kafka candles-btc / candles-gold]
   L[CandleKafkaListener]
   S1[CandleIngestService @Transactional]
   R1[CandleRepository → H2]

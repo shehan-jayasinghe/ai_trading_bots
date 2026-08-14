@@ -1,5 +1,5 @@
 # Local Kafka (KRaft) — no Zookeeper
-# Docs: docs/architecture/infrastructure/kafka-local.md
+# Docs: ../docs/architecture/infrastructure/kafka-local.md
 #
 # Host apps → localhost:9092
 # Containers on this compose network → kafka:29092
@@ -8,6 +8,7 @@ services:
   kafka:
     image: apache/kafka:3.8.1
     container_name: ai-trading-kafka
+    hostname: kafka
     ports:
       - "9092:9092"
     environment:
@@ -18,24 +19,26 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 6
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     volumes:
       - kafka-data:/var/lib/kafka/data
+    restart: unless-stopped
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1",
+          "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1",
         ]
       interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 40s
+      timeout: 15s
+      retries: 12
+      start_period: 60s
 
   kafka-init-topics:
     image: apache/kafka:3.8.1
@@ -48,11 +51,16 @@ services:
       - |
         set -e
         BOOT=kafka:29092
-        for t in candles.btc candles.gold; do
+        # Remove legacy dot-named topics (metric warning); ignore if missing
+        for legacy in candles.btc candles.gold; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BOOT \
+            --delete --topic $$legacy 2>/dev/null || true
+        done
+        for t in candles-btc candles-gold; do
           /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BOOT \
             --create --if-not-exists --topic $$t --partitions 6 --replication-factor 1
         done
-        echo "Topics:"
+        echo "Topics ready:"
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BOOT --list
     restart: "no"
 

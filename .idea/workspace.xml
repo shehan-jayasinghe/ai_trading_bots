@@ -4,14 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration">
-      <change afterPath="$PROJECT_DIR$/workers/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workers/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workers/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workers/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling">
+      <change beforePath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/architecture/springboot/websocket/springboot-kafka-websocket.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/springboot/websocket/springboot-kafka-websocket.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/local-env/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/local-env/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/realtime-spring/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/realtime-spring/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/realtime-spring/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workers/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/workers/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workers/app/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/workers/app/settings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,61 +74,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.1981520754429356" />
-      <entry key="MS500" value="2.8882619392399187" />
-      <entry key="S2" value="7.2968167878361525" />
-      <entry key="S5" value="11.387781349646724" />
-      <entry key="S10" value="15.055496927637087" />
-      <entry key="S30" value="23.683015526411584" />
-      <entry key="S60" value="28.627003458083852" />
-      <entry key="M2" value="31.94043154337248" />
-      <entry key="M5" value="34.27587405814334" />
-      <entry key="M10" value="35.12026389116838" />
-      <entry key="M15" value="35.41050933868885" />
-      <entry key="M30" value="35.76081402716089" />
-      <entry key="H1" value="36.885239589573104" />
-      <entry key="H2" value="41.700884526726576" />
-      <entry key="H4" value="53.69518839219167" />
-      <entry key="D1" value="145.18468985188068" />
-      <entry key="W1" value="209.35740395860262" />
+      <entry key="MS100" value="4.912414736319396E-4" />
+      <entry key="MS500" value="0.3972235967523236" />
+      <entry key="S2" value="2.316215342895279" />
+      <entry key="S5" value="3.947298240882878" />
+      <entry key="S10" value="4.833298843354263" />
+      <entry key="S30" value="5.574053846417524" />
+      <entry key="S60" value="5.781969336458248" />
+      <entry key="M2" value="5.889685649334636" />
+      <entry key="M5" value="5.955557946574671" />
+      <entry key="M10" value="5.97772587040697" />
+      <entry key="M15" value="5.985138979551475" />
+      <entry key="M30" value="5.995436514682608" />
+      <entry key="H1" value="6.3268943166285085" />
+      <entry key="H2" value="9.946162347837262" />
+      <entry key="H4" value="22.52068684195679" />
+      <entry key="D1" value="125.29066333930592" />
+      <entry key="W1" value="209.56381948350128" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="0.0" />
-      <entry key="S2" value="0.0" />
-      <entry key="S5" value="0.0" />
-      <entry key="S10" value="0.0" />
-      <entry key="S30" value="0.0" />
-      <entry key="S60" value="3.7794092557463655E-291" />
-      <entry key="M2" value="1.225037367921109E-145" />
-      <entry key="M5" value="2.4894681672307272E-58" />
-      <entry key="M10" value="3.1551349470171274E-29" />
-      <entry key="M15" value="1.584956702378706E-19" />
-      <entry key="M30" value="7.962295226366413E-10" />
-      <entry key="H1" value="5.6681334682854376E-5" />
-      <entry key="H2" value="0.016329303694541598" />
-      <entry key="H4" value="0.3493007667754832" />
-      <entry key="D1" value="6.767715533126742" />
-      <entry key="W1" value="11.828484266873222" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0" />
+      <entry key="S60" value="1.0" />
+      <entry key="M2" value="1.0" />
+      <entry key="M5" value="1.0" />
+      <entry key="M10" value="1.0" />
+      <entry key="M15" value="1.0" />
+      <entry key="M30" value="1.000000000000064" />
+      <entry key="H1" value="1.0000005080527348" />
+      <entry key="H2" value="1.0015459734414172" />
+      <entry key="H4" value="1.1074772932132473" />
+      <entry key="D1" value="6.560684982621405" />
+      <entry key="W1" value="12.501153780758044" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.1632714288902344" />
-      <entry key="MS500" value="2.8700521705515434" />
-      <entry key="S2" value="7.284533670326555" />
-      <entry key="S5" value="11.379455634179381" />
-      <entry key="S10" value="15.049638867379292" />
-      <entry key="S30" value="23.679625411401783" />
-      <entry key="S60" value="28.624883753149202" />
-      <entry key="M2" value="31.93922806437783" />
-      <entry key="M5" value="34.275351977742034" />
-      <entry key="M10" value="35.11999547806375" />
-      <entry key="M15" value="35.4103287053335" />
-      <entry key="M30" value="35.7607226363644" />
-      <entry key="H1" value="36.88524815467328" />
-      <entry key="H2" value="41.71718328535646" />
-      <entry key="H4" value="54.044457162404264" />
-      <entry key="D1" value="151.95235924405094" />
-      <entry key="W1" value="221.1858771083827" />
+      <entry key="MS100" value="0.010503342934959107" />
+      <entry key="MS500" value="0.792656689258657" />
+      <entry key="S2" value="3.1032521311260646" />
+      <entry key="S5" value="4.852973228299791" />
+      <entry key="S10" value="5.784082228608401" />
+      <entry key="S30" value="6.557113833538659" />
+      <entry key="S60" value="6.773426591064895" />
+      <entry key="M2" value="6.8853956004858015" />
+      <entry key="M5" value="6.95383737972789" />
+      <entry key="M10" value="6.976864823588524" />
+      <entry key="M15" value="6.984564778283179" />
+      <entry key="M30" value="6.995149321576004" />
+      <entry key="H1" value="7.326750779216093" />
+      <entry key="H2" value="10.947633617011025" />
+      <entry key="H4" value="23.628118382519183" />
+      <entry key="D1" value="131.85130442549283" />
+      <entry key="W1" value="222.06496159983786" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -244,14 +246,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1777928501521</updated>
-    </task>
-    <task id="LOCAL-00017" summary="update IDE configuration: exclude Terraform state folder from project indexing">
-      <option name="closed" value="true" />
-      <created>1779353908218</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1779353908218</updated>
     </task>
     <task id="LOCAL-00018" summary="deploy infrastructure and platform: provision EKS cluster, setup Helm charts for backend, Kafka, PostgreSQL, and workers; configure Ansible playbooks, Dockerfiles, and Terraform modules for seamless deployment and orchestration">
       <option name="closed" value="true" />
@@ -637,7 +631,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786686159256</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling">
+      <option name="closed" value="true" />
+      <created>1786700806168</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1786700806169</updated>
+    </task>
+    <option name="localTasksCounter" value="67" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -668,7 +670,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="update Jenkins pipeline and Helm values: add `imageRegistry` for `docker.io`, implement Bitnami image fixup for deprecated tags, restart StatefulSets, and enhance platform readiness checks" />
     <MESSAGE value="update Helm values and deployment scripts: add `adminPasswordKey` for Bitnami PostgreSQL chart compatibility" />
     <MESSAGE value="update Ansible dev inventory: set AWS-specific IDs and ARNs for EKS resources in `eks.yml`" />
     <MESSAGE value="add AWS Load Balancer Controller and external-dns setup: implement `eks-ingress-controllers.sh`, update Jenkins pipeline, Helm scripts, and environment configurations" />
@@ -693,7 +694,8 @@
     <MESSAGE value="implement Phase 0 test agent: add backend API tests for signup and sign-in, enhance test structure, and introduce incident handling" />
     <MESSAGE value="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment" />
     <MESSAGE value="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration" />
-    <option name="LAST_COMMIT_MESSAGE" value="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration" />
+    <MESSAGE value="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="initialize realtime-spring service: implement Kafka listeners, WebSocket broadcasting, REST APIs, validation, and exception handling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

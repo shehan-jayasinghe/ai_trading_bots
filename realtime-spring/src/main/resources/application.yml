@@ -32,8 +32,8 @@ spring:
 
 app:
   kafka:
-    topic-candles-btc: ${KAFKA_TOPIC_CANDLES_BTC:candles.btc}
-    topic-candles-gold: ${KAFKA_TOPIC_CANDLES_GOLD:candles.gold}
+    topic-candles-btc: ${KAFKA_TOPIC_CANDLES_BTC:candles-btc}
+    topic-candles-gold: ${KAFKA_TOPIC_CANDLES_GOLD:candles-gold}
   websocket:
     path: /ws
   cors:

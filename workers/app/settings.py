@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     )
 
     kafka_bootstrap_servers: str = "localhost:9092"
-    kafka_topic_candles_btc: str = "candles.btc"
-    kafka_topic_candles_gold: str = "candles.gold"
+    kafka_topic_candles_btc: str = "candles-btc"
+    kafka_topic_candles_gold: str = "candles-gold"
 
     worker_enable_binance: bool = True
     worker_enable_deriv: bool = True

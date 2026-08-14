@@ -7,7 +7,7 @@ No tick topics — Kafka stores candle time series only.
 ## Goal
 
 ```text
-Binance API  →  normalize candles (1s / 2s / 1m / …)  →  Kafka candles.btc
+Binance API  →  normalize candles (1s / 2s / 1m / …)  →  Kafka candles-btc
 ```
 
 ## Flow chart
@@ -21,7 +21,7 @@ flowchart TD
   K[Produce to Kafka]
 
   E --> A --> F --> B --> K
-  K --> C[candles.btc]
+  K --> C[candles-btc]
 ```
 
 ## Auth (client app → env)
@@ -34,7 +34,7 @@ flowchart TD
 | `BINANCE_SYMBOL` | Yes | e.g. `BTCUSDT` |
 | `BINANCE_TIMEFRAMES` | Yes | e.g. `1s,2s,1m` |
 | `KAFKA_BOOTSTRAP_SERVERS` | Yes | e.g. `localhost:9092` |
-| `KAFKA_TOPIC_CANDLES_BTC` | No | Default `candles.btc` |
+| `KAFKA_TOPIC_CANDLES_BTC` | No | Default `candles-btc` |
 
 ## Timeframes
 
@@ -46,7 +46,7 @@ flowchart TD
 
 ## Kafka publish rules
 
-1. **Topic:** `candles.btc` only (see [kafka-local.md](../../infrastructure/kafka-local.md)).
+1. **Topic:** `candles-btc` only (see [kafka-local.md](../../infrastructure/kafka-local.md)).
 2. **Key:**
 
    ```text
@@ -68,7 +68,7 @@ sequenceDiagram
   P->>API: Market stream / klines
   API-->>P: Prices
   P->>P: Close 1s / 2s / 1m candles
-  P->>Kafka: produce(candles.btc, key=btc\|tf\|epoch)
+  P->>Kafka: produce(candles-btc, key=btc\|tf\|epoch)
 ```
 
 ## Code location
