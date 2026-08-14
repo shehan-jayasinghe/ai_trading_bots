@@ -48,7 +48,7 @@ services:
       - |
         set -e
         BOOT=kafka:29092
-        for t in ticks.btc candles.btc ticks.gold candles.gold; do
+        for t in candles.btc candles.gold; do
           /opt/kafka/bin/kafka-topics.sh --bootstrap-server $$BOOT \
             --create --if-not-exists --topic $$t --partitions 6 --replication-factor 1
         done

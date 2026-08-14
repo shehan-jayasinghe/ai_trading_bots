@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment">
+      <change beforePath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/local-env/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/local-env/docker-compose.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="e747b866-5c8a-42e6-9761-d5915f9e3f9c" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="e747b866-5c8a-42e6-9761-d5915f9e3f9c" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/shehanjayasinghe/Documents/development/Python/ai_trading_bots" value="3Ht9hP9aeVbeAevOUiqYOqyeG2P" />
+      <entry key="_/Users/shehanjayasinghe/Documents/development/Python/deriv_ai_bot" value="3DHADNMukqN0f3u7rZ5jcyBSWrk" />
+    </persistenceIdMap>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="3266" />
+    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="developmet-cloudflare" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;shehan-jayasinghe&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/shehan-jayasinghe/ai_trading_bots.git&quot;,
+    &quot;accountId&quot;: &quot;f4f73e80-b0c3-4c04-94e9-14d48b7189ec&quot;
+  }
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.1981520754429356" />
+      <entry key="MS500" value="2.8882619392399187" />
+      <entry key="S2" value="7.2968167878361525" />
+      <entry key="S5" value="11.387781349646724" />
+      <entry key="S10" value="15.055496927637087" />
+      <entry key="S30" value="23.683015526411584" />
+      <entry key="S60" value="28.627003458083852" />
+      <entry key="M2" value="31.94043154337248" />
+      <entry key="M5" value="34.27587405814334" />
+      <entry key="M10" value="35.12026389116838" />
+      <entry key="M15" value="35.41050933868885" />
+      <entry key="M30" value="35.76081402716089" />
+      <entry key="H1" value="36.885239589573104" />
+      <entry key="H2" value="41.700884526726576" />
+      <entry key="H4" value="53.69518839219167" />
+      <entry key="D1" value="145.18468985188068" />
+      <entry key="W1" value="209.35740395860262" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="3.7794092557463655E-291" />
+      <entry key="M2" value="1.225037367921109E-145" />
+      <entry key="M5" value="2.4894681672307272E-58" />
+      <entry key="M10" value="3.1551349470171274E-29" />
+      <entry key="M15" value="1.584956702378706E-19" />
+      <entry key="M30" value="7.962295226366413E-10" />
+      <entry key="H1" value="5.6681334682854376E-5" />
+      <entry key="H2" value="0.016329303694541598" />
+      <entry key="H4" value="0.3493007667754832" />
+      <entry key="D1" value="6.767715533126742" />
+      <entry key="W1" value="11.828484266873222" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.1632714288902344" />
+      <entry key="MS500" value="2.8700521705515434" />
+      <entry key="S2" value="7.284533670326555" />
+      <entry key="S5" value="11.379455634179381" />
+      <entry key="S10" value="15.049638867379292" />
+      <entry key="S30" value="23.679625411401783" />
+      <entry key="S60" value="28.624883753149202" />
+      <entry key="M2" value="31.93922806437783" />
+      <entry key="M5" value="34.275351977742034" />
+      <entry key="M10" value="35.11999547806375" />
+      <entry key="M15" value="35.4103287053335" />
+      <entry key="M30" value="35.7607226363644" />
+      <entry key="H1" value="36.88524815467328" />
+      <entry key="H2" value="41.71718328535646" />
+      <entry key="H4" value="54.044457162404264" />
+      <entry key="D1" value="151.95235924405094" />
+      <entry key="W1" value="221.1858771083827" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3DHADNMukqN0f3u7rZ5jcyBSWrk" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.local-env: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.run.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;/Users/shehanjayasinghe/Library/Application Support/JetBrains/PyCharm2026.1/plugins/Shell Script/shellcheck&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;development-volume-theory&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/shehanjayasinghe/Documents/development/Python/ai_trading_bots&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.ColorSchemeFont&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/shehanjayasinghe/Documents/development/Python/deriv_ai_bot/frontend/node_modules/typescript/lib&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;GitStage.ChangesTree.GroupingKeys&quot;: [
+      &quot;directory&quot;,
+      &quot;module&quot;,
+      &quot;repository&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/backend" />
+      <recent name="$PROJECT_DIR$/deploy" />
+      <recent name="$PROJECT_DIR$/infrastructure/ansible/playbooks" />
+      <recent name="$PROJECT_DIR$/infrastructure/terraform/environments" />
+      <recent name="$PROJECT_DIR$/infrastructure/terraform/environments/dev" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/jenkins/config" />
+      <recent name="$PROJECT_DIR$/infrastructure/terraform/environments/dev" />
+      <recent name="$PROJECT_DIR$/backend/bot_circuit" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.run">
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="deriv_ai_bot" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/bot_circuit" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/bot_circuit/run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="local-env: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="local-env/docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.local-env: Compose Deployment" />
+        <item itemvalue="Python.run" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-6fa658e1df1a-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.8665.369" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="" />
+      <created>1777928501521</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777928501521</updated>
+    </task>
+    <task id="LOCAL-00016" summary="provision Jenkins CI/CD infrastructure in AWS: configure Terraform with VPC, EC2, ALB, security groups, and Route53; integrate Ansible for Jenkins installation and configuration">
+      <option name="closed" value="true" />
+      <created>1779353899344</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1779353899344</updated>
+    </task>
+    <task id="LOCAL-00017" summary="update IDE configuration: exclude Terraform state folder from project indexing">
+      <option name="closed" value="true" />
+      <created>1779353908218</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1779353908218</updated>
+    </task>
+    <task id="LOCAL-00018" summary="deploy infrastructure and platform: provision EKS cluster, setup Helm charts for backend, Kafka, PostgreSQL, and workers; configure Ansible playbooks, Dockerfiles, and Terraform modules for seamless deployment and orchestration">
+      <option name="closed" value="true" />
+      <created>1779436083031</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1779436083031</updated>
+    </task>
+    <task id="LOCAL-00019" summary="set up Jenkins CI pipelines and infrastructure: add Docker-based pipelines to build and push backend and worker images to ECR; configure Ansible tasks for CI tools (Docker, AWS CLI, kubectl, Helm); document Jenkins setup and usage">
+      <option name="closed" value="true" />
+      <created>1779490414712</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1779490414712</updated>
+    </task>
+    <task id="LOCAL-00020" summary="add Jenkins pipeline and Docker configuration to build and push deriv-frontend image; update documentation and frontend build process">
+      <option name="closed" value="true" />
+      <created>1779490835594</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1779490835594</updated>
+    </task>
+    <task id="LOCAL-00021" summary="add IRSA roles for ALB controller and external-dns; update Terraform to support Route53 management and EKS ingress deployment">
+      <option name="closed" value="true" />
+      <created>1779524404976</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1779524404977</updated>
+    </task>
+    <task id="LOCAL-00022" summary="add logging for ECR login process in Jenkins pipeline script">
+      <option name="closed" value="true" />
+      <created>1779535096861</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1779535096861</updated>
+    </task>
+    <task id="LOCAL-00023" summary="update ECR login shell script to use heredoc format in Jenkins shared library">
+      <option name="closed" value="true" />
+      <created>1779544504090</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1779544504090</updated>
+    </task>
+    <task id="LOCAL-00024" summary="simplify ECR login script by removing unnecessary multiline string formatting">
+      <option name="closed" value="true" />
+      <created>1779544728147</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1779544728147</updated>
+    </task>
+    <task id="LOCAL-00025" summary="update Jenkins pipelines: improve bash script compatibility and frontend build configuration">
+      <option name="closed" value="true" />
+      <created>1779550822272</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1779550822272</updated>
+    </task>
+    <task id="LOCAL-00026" summary="update frontend Dockerfile: add environment variable for NEXT_PUBLIC_BOT_BASE_URL">
+      <option name="closed" value="true" />
+      <created>1779554336892</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1779554336892</updated>
+    </task>
+    <task id="LOCAL-00027" summary="deploy frontend with ALB ingress: add Helm templates, Ansible tasks, and Terraform outputs; update README and values files for EKS integration">
+      <option name="closed" value="true" />
+      <created>1779557113124</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1779557113124</updated>
+    </task>
+    <task id="LOCAL-00028" summary="make `MmConfigFields` component generic: add type parameter to enhance reusability with different `MmFields` types">
+      <option name="closed" value="true" />
+      <created>1779557229344</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1779557229344</updated>
+    </task>
+    <task id="LOCAL-00029" summary="add Jenkins pipeline for deploying deriv-platform to EKS: include Helm deployment, rollout verification, and updated documentation">
+      <option name="closed" value="true" />
+      <created>1779557773240</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1779557773240</updated>
+    </task>
+    <task id="LOCAL-00030" summary="fix Helm ingress certificateArns escaping in Jenkins pipeline script">
+      <option name="closed" value="true" />
+      <created>1779594149690</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1779594149690</updated>
+    </task>
+    <task id="LOCAL-00031" summary="fix Jenkins pipeline: use --set-literal for ingress certificateArns to resolve escaping issue">
+      <option name="closed" value="true" />
+      <created>1779594309412</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1779594309412</updated>
+    </task>
+    <task id="LOCAL-00032" summary="update Helm charts and pipelines: remove namespace creation from Helm, add explicit namespace management in Jenkins, Terraform, and Ansible">
+      <option name="closed" value="true" />
+      <created>1779594880077</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1779594880077</updated>
+    </task>
+    <task id="LOCAL-00033" summary="load secrets from Kubernetes and simplify environment variable configuration in Helm templates">
+      <option name="closed" value="true" />
+      <created>1779596581302</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1779596581302</updated>
+    </task>
+    <task id="LOCAL-00034" summary="integrate AWS Secrets Manager for platform secrets: update Terraform, Ansible, and Jenkins pipelines; deprecate eks_secrets.yml">
+      <option name="closed" value="true" />
+      <created>1779599369493</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1779599369493</updated>
+    </task>
+    <task id="LOCAL-00035" summary="add modular Jenkins scripts for Helm platform deployment and diagnostics: improve readability, reusability, and logging">
+      <option name="closed" value="true" />
+      <created>1779601149516</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1779601149516</updated>
+    </task>
+    <task id="LOCAL-00036" summary="update Jenkins pipelines and documentation: support both 'master' and 'main' branches for tagging and deployment">
+      <option name="closed" value="true" />
+      <created>1779603242549</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1779603242549</updated>
+    </task>
+    <task id="LOCAL-00037" summary="add Helm release lock handling to Jenkins pipelines: implement `deploy_helm_unlock` to clear pending upgrades and improve deployment reliability">
+      <option name="closed" value="true" />
+      <created>1779606844311</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1779606844311</updated>
+    </task>
+    <task id="LOCAL-00038" summary="update Helm values: set `storageClass` to `gp2` for persistence in dev environment">
+      <option name="closed" value="true" />
+      <created>1779609319695</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1779609319695</updated>
+    </task>
+    <task id="LOCAL-00039" summary="add EBS CSI integration: create Terraform module for IRSA and add-on, update Ansible and Jenkins for preflight checks, and update documentation for storage provisioning">
+      <option name="closed" value="true" />
+      <created>1779614839706</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1779614839706</updated>
+    </task>
+    <task id="LOCAL-00040" summary="update Helm charts and Jenkins scripts: switch Bitnami images to `bitnamilegacy/*` due to tag deprecation, enhance EBS CSI preflight checks, and update IAM for add-on access">
+      <option name="closed" value="true" />
+      <created>1779616114703</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1779616114703</updated>
+    </task>
+    <task id="LOCAL-00041" summary="update Jenkins pipeline and Helm values: add `imageRegistry` for `docker.io`, implement Bitnami image fixup for deprecated tags, restart StatefulSets, and enhance platform readiness checks">
+      <option name="closed" value="true" />
+      <created>1779617799167</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1779617799167</updated>
+    </task>
+    <task id="LOCAL-00042" summary="update Helm values and deployment scripts: add `adminPasswordKey` for Bitnami PostgreSQL chart compatibility">
+      <option name="closed" value="true" />
+      <created>1779620163314</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1779620163314</updated>
+    </task>
+    <task id="LOCAL-00043" summary="update Ansible dev inventory: set AWS-specific IDs and ARNs for EKS resources in `eks.yml`">
+      <option name="closed" value="true" />
+      <created>1779621832361</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1779621832361</updated>
+    </task>
+    <task id="LOCAL-00044" summary="add AWS Load Balancer Controller and external-dns setup: implement `eks-ingress-controllers.sh`, update Jenkins pipeline, Helm scripts, and environment configurations">
+      <option name="closed" value="true" />
+      <created>1779623083966</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1779623083966</updated>
+    </task>
+    <task id="LOCAL-00045" summary="add external-dns Helm setup: update Ansible tasks and Jenkins scripts to include external-dns chart repository and deployment">
+      <option name="closed" value="true" />
+      <created>1779623724931</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1779623724931</updated>
+    </task>
+    <task id="LOCAL-00046" summary="restart ALB controller after Helm upgrade: sync webhook TLS rotation in Ansible tasks and Jenkins scripts">
+      <option name="closed" value="true" />
+      <created>1779624117732</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1779624117732</updated>
+    </task>
+    <task id="LOCAL-00047" summary="update Helm values and deployment scripts: disable `kafkaTopics` by default in dev, set ALB controller `replicaCount=1` in Ansible and Jenkins scripts">
+      <option name="closed" value="true" />
+      <created>1779625381491</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1779625381491</updated>
+    </task>
+    <task id="LOCAL-00048" summary="add teardown scripts and pipeline: automate removal of Kubernetes ALBs, target groups, security groups, and EIPs prior to `terraform destroy`">
+      <option name="closed" value="true" />
+      <created>1779636690688</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1779636690688</updated>
+    </task>
+    <task id="LOCAL-00049" summary="add monitoring stack with Grafana, Loki, and Promtail: update Helm charts, deployment scripts, Terraform modules, and documentation for platform log aggregation and observability">
+      <option name="closed" value="true" />
+      <created>1779696070980</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1779696070980</updated>
+    </task>
+    <task id="LOCAL-00050" summary="add Helm charts for EKS cluster addons: include AWS Load Balancer Controller and external-dns with necessary configurations and documentation">
+      <option name="closed" value="true" />
+      <created>1779714752725</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1779714752726</updated>
+    </task>
+    <task id="LOCAL-00051" summary="migrate Jenkins configuration to use global environment variables: remove `dev.env`, update pipelines, scripts, and documentation for consistency and simplicity">
+      <option name="closed" value="true" />
+      <created>1779717304399</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1779717304399</updated>
+    </task>
+    <task id="LOCAL-00052" summary="remove `charts/` entry from `.helmignore` in EKS addons and monitoring directories">
+      <option name="closed" value="true" />
+      <created>1779718017828</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1779718017828</updated>
+    </task>
+    <task id="LOCAL-00053" summary="update Loki Helm values: enable persistence with singleBinary, disable SimpleScalable components when replicas &gt; 0">
+      <option name="closed" value="true" />
+      <created>1779720341627</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1779720341627</updated>
+    </task>
+    <task id="LOCAL-00054" summary="update Grafana ingress handling: avoid `--set` for annotation keys, enable TLS and dynamic host overrides via temporary values file">
+      <option name="closed" value="true" />
+      <created>1779720847562</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1779720847563</updated>
+    </task>
+    <task id="LOCAL-00055" summary="update Grafana Helm values and deployment script: configure `root_url` and `domain` for ALB ingress">
+      <option name="closed" value="true" />
+      <created>1779722002313</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1779722002313</updated>
+    </task>
+    <task id="LOCAL-00056" summary="increase EKS node group desired size to 2: update Terraform variables, Jenkins lifecycle script, and documentation to support platform + Grafana/Loki deployment">
+      <option name="closed" value="true" />
+      <created>1779724312815</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1779724312815</updated>
+    </task>
+    <task id="LOCAL-00057" summary="increase EKS node group desired and max size to 5: update Terraform variables, Jenkins scripts, and documentation for platform scaling and monitoring requirements">
+      <option name="closed" value="true" />
+      <created>1779725721857</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1779725721857</updated>
+    </task>
+    <task id="LOCAL-00058" summary="update Loki Helm values and documentation: enable S3 chunk storage, configure PVC for compactor/WAL, and add troubleshooting steps">
+      <option name="closed" value="true" />
+      <created>1779726835744</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1779726835744</updated>
+    </task>
+    <task id="LOCAL-00059" summary="remove Terraform definitions for dev environment: clean up unused resources, variables, and outputs">
+      <option name="closed" value="true" />
+      <created>1779791512481</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1779791512481</updated>
+    </task>
+    <task id="LOCAL-00060" summary="add worker_factory documentation: phased rollout plan, Bedrock prompts, and associated README updates">
+      <option name="closed" value="true" />
+      <created>1779793393487</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1779793393487</updated>
+    </task>
+    <task id="LOCAL-00061" summary="expand worker_factory documentation: update phased rollout plan with folder structure, AWS setup, and testing/incident flows">
+      <option name="closed" value="true" />
+      <created>1779797652179</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1779797652179</updated>
+    </task>
+    <task id="LOCAL-00062" summary="initialize worker_factory: add base layout, test runner, environment config, and README for Phase 0 setup">
+      <option name="closed" value="true" />
+      <created>1779861372422</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1779861372422</updated>
+    </task>
+    <task id="LOCAL-00063" summary="implement Phase 0 test agent: add backend API tests for signup and sign-in, enhance test structure, and introduce incident handling">
+      <option name="closed" value="true" />
+      <created>1785991012559</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1785991012559</updated>
+    </task>
+    <task id="LOCAL-00064" summary="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment">
+      <option name="closed" value="true" />
+      <created>1786682155858</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1786682155858</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="update Helm charts and Jenkins scripts: switch Bitnami images to `bitnamilegacy/*` due to tag deprecation, enhance EBS CSI preflight checks, and update IAM for add-on access" />
+    <MESSAGE value="update Jenkins pipeline and Helm values: add `imageRegistry` for `docker.io`, implement Bitnami image fixup for deprecated tags, restart StatefulSets, and enhance platform readiness checks" />
+    <MESSAGE value="update Helm values and deployment scripts: add `adminPasswordKey` for Bitnami PostgreSQL chart compatibility" />
+    <MESSAGE value="update Ansible dev inventory: set AWS-specific IDs and ARNs for EKS resources in `eks.yml`" />
+    <MESSAGE value="add AWS Load Balancer Controller and external-dns setup: implement `eks-ingress-controllers.sh`, update Jenkins pipeline, Helm scripts, and environment configurations" />
+    <MESSAGE value="add external-dns Helm setup: update Ansible tasks and Jenkins scripts to include external-dns chart repository and deployment" />
+    <MESSAGE value="restart ALB controller after Helm upgrade: sync webhook TLS rotation in Ansible tasks and Jenkins scripts" />
+    <MESSAGE value="update Helm values and deployment scripts: disable `kafkaTopics` by default in dev, set ALB controller `replicaCount=1` in Ansible and Jenkins scripts" />
+    <MESSAGE value="add teardown scripts and pipeline: automate removal of Kubernetes ALBs, target groups, security groups, and EIPs prior to `terraform destroy`" />
+    <MESSAGE value="add monitoring stack with Grafana, Loki, and Promtail: update Helm charts, deployment scripts, Terraform modules, and documentation for platform log aggregation and observability" />
+    <MESSAGE value="add Helm charts for EKS cluster addons: include AWS Load Balancer Controller and external-dns with necessary configurations and documentation" />
+    <MESSAGE value="migrate Jenkins configuration to use global environment variables: remove `dev.env`, update pipelines, scripts, and documentation for consistency and simplicity" />
+    <MESSAGE value="remove `charts/` entry from `.helmignore` in EKS addons and monitoring directories" />
+    <MESSAGE value="update Loki Helm values: enable persistence with singleBinary, disable SimpleScalable components when replicas &gt; 0" />
+    <MESSAGE value="update Grafana ingress handling: avoid `--set` for annotation keys, enable TLS and dynamic host overrides via temporary values file" />
+    <MESSAGE value="update Grafana Helm values and deployment script: configure `root_url` and `domain` for ALB ingress" />
+    <MESSAGE value="increase EKS node group desired size to 2: update Terraform variables, Jenkins lifecycle script, and documentation to support platform + Grafana/Loki deployment" />
+    <MESSAGE value="increase EKS node group desired and max size to 5: update Terraform variables, Jenkins scripts, and documentation for platform scaling and monitoring requirements" />
+    <MESSAGE value="update Loki Helm values and documentation: enable S3 chunk storage, configure PVC for compactor/WAL, and add troubleshooting steps" />
+    <MESSAGE value="remove Terraform definitions for dev environment: clean up unused resources, variables, and outputs" />
+    <MESSAGE value="add worker_factory documentation: phased rollout plan, Bedrock prompts, and associated README updates" />
+    <MESSAGE value="expand worker_factory documentation: update phased rollout plan with folder structure, AWS setup, and testing/incident flows" />
+    <MESSAGE value="initialize worker_factory: add base layout, test runner, environment config, and README for Phase 0 setup" />
+    <MESSAGE value="implement Phase 0 test agent: add backend API tests for signup and sign-in, enhance test structure, and introduce incident handling" />
+    <MESSAGE value="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment" />
+    <option name="LAST_COMMIT_MESSAGE" value="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workers/executor/langgraph_builder.py</url>
+          <line>3</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/worker_factory/tests/api/test_auth_api.py</url>
+          <line>3</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/worker_factory/tests/helpers/pull_incident.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>
