@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     binance_base_url: str = "https://api.binance.com"
     binance_ws_url: str = "wss://stream.binance.com:9443/ws"
     binance_symbol: str = "BTCUSDT"
-    binance_timeframes: str = "1s,2s,1m"
+    binance_timeframes: str = "1s,1m"
 
     deriv_app_id: str = "1089"
     deriv_token: str = ""

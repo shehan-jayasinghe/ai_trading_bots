@@ -189,9 +189,7 @@ flowchart TB
 | **Security** | `SecurityConfig` | CORS, permit local `/ws` + `/api/**` (Clerk later) |
 | **Transaction** | `@Transactional` on `CandleIngestService.ingestFromKafka` | Upsert candle row atomically |
 
-## Out of scope
-
-- STOMP / SockJS
+UI: [nextjs-candle-stream-ui.md](../frontend/nextjs-candle-stream-ui.md) — Next.js charts from `/ws` + `/api/candles`.
 - Producer / FastAPI workers
 - Tick topics
 - REST history API
