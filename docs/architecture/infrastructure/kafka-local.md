@@ -135,3 +135,5 @@ KAFKA_TOPIC_CANDLES_GOLD=candles.gold
 ```
 
 Producer workers: `workers/app/` — Binance + Deriv publish **candles only**.
+
+UI live path: [springboot-kafka-websocket.md](../springboot/websocket/springboot-kafka-websocket.md) — Spring Boot app in `realtime-spring/`.

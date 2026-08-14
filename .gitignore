@@ -44,3 +44,7 @@ Thumbs.db
 
 # Node (if used under frontend/)
 node_modules/
+
+# Java / Maven
+target/
+*.class

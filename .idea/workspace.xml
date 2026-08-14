@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment">
-      <change beforePath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/binance/producer/binance-time-series-kafka.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/deriv/producer/deriv-gold-kafka.md" afterDir="false" />
+    <list default="true" id="3822409a-4cbb-471a-8c63-b6ea0a498725" name="Changes" comment="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration">
+      <change afterPath="$PROJECT_DIR$/workers/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workers/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workers/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workers/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture/infrastructure/kafka-local.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/local-env/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/local-env/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +148,6 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;SHELLCHECK.PATH&quot;: &quot;/Users/shehanjayasinghe/Library/Application Support/JetBrains/PyCharm2026.1/plugins/Shell Script/shellcheck&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
@@ -182,7 +184,7 @@
       <recent name="$PROJECT_DIR$/backend/bot_circuit" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RunManager" selected="Docker.local-env: Compose Deployment">
     <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="deriv_ai_bot" />
       <option name="ENV_FILES" value="" />
@@ -242,14 +244,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1777928501521</updated>
-    </task>
-    <task id="LOCAL-00016" summary="provision Jenkins CI/CD infrastructure in AWS: configure Terraform with VPC, EC2, ALB, security groups, and Route53; integrate Ansible for Jenkins installation and configuration">
-      <option name="closed" value="true" />
-      <created>1779353899344</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1779353899344</updated>
     </task>
     <task id="LOCAL-00017" summary="update IDE configuration: exclude Terraform state folder from project indexing">
       <option name="closed" value="true" />
@@ -635,7 +629,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786682155858</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration">
+      <option name="closed" value="true" />
+      <created>1786686159256</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1786686159256</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -666,7 +668,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="update Helm charts and Jenkins scripts: switch Bitnami images to `bitnamilegacy/*` due to tag deprecation, enhance EBS CSI preflight checks, and update IAM for add-on access" />
     <MESSAGE value="update Jenkins pipeline and Helm values: add `imageRegistry` for `docker.io`, implement Bitnami image fixup for deprecated tags, restart StatefulSets, and enhance platform readiness checks" />
     <MESSAGE value="update Helm values and deployment scripts: add `adminPasswordKey` for Bitnami PostgreSQL chart compatibility" />
     <MESSAGE value="update Ansible dev inventory: set AWS-specific IDs and ARNs for EKS resources in `eks.yml`" />
@@ -691,7 +692,8 @@
     <MESSAGE value="initialize worker_factory: add base layout, test runner, environment config, and README for Phase 0 setup" />
     <MESSAGE value="implement Phase 0 test agent: add backend API tests for signup and sign-in, enhance test structure, and introduce incident handling" />
     <MESSAGE value="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment" />
-    <option name="LAST_COMMIT_MESSAGE" value="add initial documentation and configuration for Binance and Deriv Kafka producers, including environment setup and local Kafka deployment" />
+    <MESSAGE value="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration" />
+    <option name="LAST_COMMIT_MESSAGE" value="add Binance and Deriv Kafka producers: implement workers, Kafka publisher, FastAPI backend, and example environment configuration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
