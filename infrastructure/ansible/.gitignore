@@ -1,5 +1,0 @@
-logs/
-*.retry
-.ansible/
-# Obsolete — secrets live in AWS Secrets Manager; ignore if recreated locally
-inventories/dev/group_vars/eks_secrets.yml

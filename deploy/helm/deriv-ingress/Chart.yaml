@@ -1,6 +1,0 @@
-apiVersion: v2
-name: deriv-ingress
-description: ALB Ingress for deriv-ai-bot public app and API routes
-type: application
-version: 0.1.0
-appVersion: "0.1.0"

@@ -1,6 +1,0 @@
----
-- name: Install and configure Jenkins host
-  hosts: jenkins
-  gather_facts: true
-  roles:
-    - role: jenkins_host

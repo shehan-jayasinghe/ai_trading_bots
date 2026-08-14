@@ -1,6 +1,0 @@
-apiVersion: v2
-name: deriv-apps
-description: deriv-ai-bot application workloads (backend, workers, frontend)
-type: application
-version: 0.1.0
-appVersion: "0.1.0"
