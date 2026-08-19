@@ -1,82 +1,55 @@
 # AI Trading Bots Platform
 
-A modular trading platform repository organized around a FastAPI backend, frontend, worker services, infrastructure, deployment configuration, and supporting documentation.
+A modular platform for experimenting with AI-assisted trading workflows, backend APIs, worker services, event-driven processing, and deployment infrastructure.
+
+## Highlights
+
+- FastAPI backend and Python services
+- Event-driven processing with Kafka
+- PostgreSQL persistence
+- Frontend and background worker components
+- Docker, deployment, and CI/CD configuration
+- Supporting architecture and development documentation
 
 ## Architecture
 
 ```text
-                    AI Trading Bots Platform
-                              |
-        +---------------------+---------------------+
-        |                     |                     |
-     Frontend              Backend               Workers
-        |                     |                     |
-        |              FastAPI / Python            |
-        |                     |                     |
-        |          +----------+----------+          |
-        |          |                     |          |
-        |      PostgreSQL            Kafka <--------+
-        |          |                     |
-        +----------+---------------------+
-                              |
-                   Infrastructure / Deploy
+Client -> Frontend -> FastAPI Backend -> PostgreSQL
+                         |
+                         v
+                       Kafka
+                         |
+                  Background Workers
+                         |
+                  Deployment / Infra
 ```
 
 ## Repository Structure
 
-- `backend/` — FastAPI backend application.
-- `frontend/` — user interface.
-- `workers/` — background processing services.
-- `worker_factory/` — worker orchestration/support.
-- `infrastructure/` — infrastructure configuration.
-- `deploy/` — deployment resources.
-- `jenkins/` — CI/CD resources.
-- `docs/` — project documentation.
-- `tutorials/` — supporting tutorials.
-
-## Backend Stack
-
-The backend targets Python 3.11+ and uses:
-
-- FastAPI
-- Uvicorn
-- Pydantic
-- SQLAlchemy
-- PostgreSQL (`asyncpg` / `psycopg2`)
-- PyJWT and Cryptography
-- `aiokafka` for Kafka integration
-
-## Runtime Flow
-
-1. A client sends a request to the FastAPI backend.
-2. Authentication and request validation are applied.
-3. Application services process the request.
-4. PostgreSQL is used for relational persistence where required.
-5. Kafka is used for asynchronous/event-driven communication.
-6. Background workers process long-running or asynchronous tasks.
-7. Infrastructure and deployment resources provide the runtime environment.
+- `backend/` — API and application services
+- `frontend/` — web interface
+- `workers/` — asynchronous processing
+- `worker_factory/` — worker orchestration
+- `infrastructure/` — infrastructure configuration
+- `deploy/` — deployment resources
+- `jenkins/` — CI/CD resources
+- `docs/` — architecture and project documentation
 
 ## Local Development
 
-From the backend directory, install the dependencies defined by the project configuration and start the FastAPI application with Uvicorn.
+Install the backend dependencies and start the API with the project's configured environment:
 
 ```bash
 cd backend
 uvicorn app.main:app --reload
 ```
 
-> The exact application module and required environment variables should be verified against the current backend configuration before running in a new environment.
+Verify the exact module and environment variables against the current project configuration before running.
 
-## Configuration & Security
+## Security
 
-Use the provided `.env.example` as the starting point for local configuration. Never commit API tokens, database passwords, JWT secrets, broker credentials, or other production secrets.
+Keep API tokens, database credentials, broker credentials, JWT secrets, and other sensitive values in environment variables or a secret manager. Never commit production secrets.
 
-For production, use a proper secret-management solution and environment-specific configuration.
+## Status
 
-## Deployment
-
-Deployment and infrastructure concerns are intentionally separated from application code through the `deploy/`, `infrastructure/`, and `jenkins/` directories.
-
-## Disclaimer
-
-Trading systems can result in financial loss. This repository is software infrastructure and experimentation; trading strategies and risk controls should be independently validated before any real-money use.
+This repository is an engineering and experimentation platform for AI-assisted, event-driven trading workflows. Validate strategies and risk controls independently before any real-money use.
